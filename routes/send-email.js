@@ -1,10 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
-// POST - Send email
+// POST - Send email with retry logic
 router.post('/', async (req, res) => {
   try {
     const { to, subject, code, type, resetLink } = req.body;
+
+    // Validate input
+    if (!to || !subject || (!code && !resetLink)) {
+      console.error('❌ Email validation failed:', { to, subject, hasCode: !!code, hasResetLink: !!resetLink });
+      return res.status(400).json({ error: 'Missing required email parameters' });
+    }
 
     const emailTemplate = getEmailTemplate(type, code, resetLink);
 
@@ -20,35 +26,72 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Send email using Resend API
-    const fetch = require('node-fetch');
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        from: 'Syria Shof <noreply@syriashof.online>',
-        to: to,
-        subject: subject,
-        html: emailTemplate
-      })      
-    });
+    // Retry logic for sending emails
+    const maxRetries = 3;
+    let lastError;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`📧 Attempting to send email to ${to} (attempt ${attempt}/${maxRetries})`);
+        
+        const fetch = require('node-fetch');
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'Syria Shof <noreply@syriashof.online>',
+            to: to,
+            subject: subject,
+            html: emailTemplate
+          }),
+          timeout: 10000 // 10 second timeout
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    if (response.ok) {
-      console.log('✅ Email sent via Resend:', data.id);
-      return res.json({ success: true, message: 'Email sent successfully via Resend' });
-    } else {
-      console.error('❌ Resend error:', data);
-      throw new Error(data.message || 'Failed to send email via Resend');
+        if (response.ok) {
+          console.log(`✅ Email sent successfully via Resend to ${to}:`, data.id);
+          return res.json({ 
+            success: true, 
+            message: 'Email sent successfully',
+            emailId: data.id
+          });
+        } else {
+          lastError = data;
+          console.error(`❌ Resend error (attempt ${attempt}/${maxRetries}):`, data);
+          
+          // Don't retry on certain errors
+          if (response.status === 400 || response.status === 404) {
+            throw new Error(data.message || 'Invalid email request');
+          }
+          
+          // Wait before retrying
+          if (attempt < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+        }
+      } catch (fetchError) {
+        lastError = fetchError;
+        console.error(`❌ Email sending error (attempt ${attempt}/${maxRetries}):`, fetchError.message);
+        
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
     }
+    
+    // All retries failed
+    throw new Error(lastError?.message || 'Failed to send email after multiple attempts');
 
   } catch (error) {
-    console.error('Email error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('❌ Final email error:', error.message);
+    return res.status(500).json({ 
+      error: 'Failed to send email',
+      details: error.message 
+    });
   }
 });
 

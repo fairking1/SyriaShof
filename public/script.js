@@ -291,35 +291,76 @@ document.addEventListener('DOMContentLoaded', function() {
     checkSession(); // Then check session
 });
 
-// Session Management
+// Session Management with retry logic
 async function checkSession() {
     sessionToken = localStorage.getItem('sessionToken');
     
-    if (sessionToken) {
+    if (!sessionToken) {
+        console.log('📭 No session token found');
+        router.navigate('/login');
+        return;
+    }
+
+    // Retry logic for session verification
+    const maxRetries = 3;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+            console.log(`🔐 Verifying session (attempt ${attempt}/${maxRetries})`);
+            
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
             const response = await fetch('/api/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'verify-session',
                     sessionToken
-                })
+                }),
+                signal: controller.signal
             });
 
+            clearTimeout(timeout);
             const data = await response.json();
 
             if (response.ok && data.valid) {
+                console.log('✅ Session valid for:', data.email);
                 currentUser = { email: data.email };
+                localStorage.setItem('userEmail', data.email); // Store email
                 router.handleRoute(); // Use router to show correct page
+                return;
             } else {
-                router.navigate('/login'); // Use router
+                // Session invalid - clear and redirect
+                console.log('❌ Session invalid:', data.error);
+                localStorage.removeItem('sessionToken');
+                localStorage.removeItem('userEmail');
+                sessionToken = null;
+                currentUser = null;
+                router.navigate('/login');
+                return;
             }
         } catch (error) {
-            console.error('Session check error:', error);
-            router.navigate('/login');
+            console.error(`❌ Session check error (attempt ${attempt}/${maxRetries}):`, error.message);
+            
+            if (error.name === 'AbortError') {
+                console.error('Session verification timeout');
+            }
+            
+            // If it's the last attempt, clear session and redirect
+            if (attempt === maxRetries) {
+                console.log('❌ All session verification attempts failed, logging out');
+                localStorage.removeItem('sessionToken');
+                localStorage.removeItem('userEmail');
+                sessionToken = null;
+                currentUser = null;
+                router.navigate('/login');
+                return;
+            }
+            
+            // Wait before retrying (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         }
-    } else {
-        router.navigate('/login');
     }
 }
 
@@ -618,8 +659,7 @@ async function handleVerifyEmail() {
             body: JSON.stringify({
                 action: 'verify-email',
                 email: pendingVerificationEmail,
-                verificationCode: code,
-                rememberMe: true
+                code: code
             })
         });
 
@@ -628,6 +668,7 @@ async function handleVerifyEmail() {
         if (response.ok) {
             sessionToken = data.sessionToken;
             localStorage.setItem('sessionToken', sessionToken);
+            localStorage.setItem('userEmail', data.email);
             currentUser = { email: data.email };
             router.navigate('/'); // Use router
             showToast(currentLang === 'ar' ? '🎉 تم التحقق بنجاح! مرحباً بك!' : '🎉 Successfully verified! Welcome!');
@@ -839,23 +880,34 @@ async function handleChangePassword() {
 }
 
 async function handleLogout() {
-    try {
-        await fetch('/api/auth', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'logout',
-                sessionToken
-            })
-        });
-    } catch (error) {
-        console.error('Logout error:', error);
+    console.log('🚪 Logging out user');
+    
+    // Call logout API to invalidate session on server
+    if (sessionToken) {
+        try {
+            await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'logout',
+                    sessionToken
+                })
+            });
+            console.log('✅ Server session invalidated');
+        } catch (error) {
+            console.error('❌ Logout API error:', error);
+        }
     }
 
+    // Clear all local data
     localStorage.removeItem('sessionToken');
+    localStorage.removeItem('userEmail');
     sessionToken = null;
     currentUser = null;
+    
+    console.log('✅ Logout complete');
     router.navigate('/login'); // Use router instead of reload
+    showToast(currentLang === 'ar' ? '👋 تم تسجيل الخروج' : '👋 Logged out');
 }
 
 // Render Trending Section
