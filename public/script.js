@@ -297,7 +297,7 @@ async function checkSession() {
     
     if (sessionToken) {
         try {
-            const response = await fetch('//api/auth', {
+            const response = await fetch('/api/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -408,7 +408,7 @@ async function handleForgotPassword() {
     sendBtn.textContent = currentLang === 'ar' ? 'جاري الإرسال...' : 'Sending...';
 
     try {
-        const response = await fetch('//api/auth', {
+        const response = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -466,7 +466,7 @@ async function handleLogin() {
     }
 
     try {
-        const response = await fetch('//api/auth', {
+        const response = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -543,7 +543,7 @@ async function handleRegister() {
     }
 
     try {
-        const response = await fetch('//api/auth', {
+        const response = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -612,7 +612,7 @@ async function handleVerifyEmail() {
     }
 
     try {
-        const response = await fetch('//api/auth', {
+        const response = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -645,7 +645,7 @@ async function handleResendCode() {
     if (!pendingVerificationEmail) return;
 
     try {
-        const response = await fetch('//api/auth', {
+        const response = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -810,7 +810,7 @@ async function handleChangePassword() {
     }
 
     try {
-        const response = await fetch('//api/auth', {
+        const response = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -840,7 +840,7 @@ async function handleChangePassword() {
 
 async function handleLogout() {
     try {
-        await fetch('//api/auth', {
+        await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1041,7 +1041,7 @@ function loadServer(url) {
 
 async function loadRating(movieId) {
     try {
-        const response = await fetch(`//api/movies?movieId=${movieId}`);
+        const response = await fetch(`/api/movies?movieId=${movieId}`);
         const data = await response.json();
         
         updateRatingDisplay(data.average || 0, data.count || 0);
@@ -1092,7 +1092,7 @@ function resetStars() {
 
 async function rateMovie(movieId, rating) {
     try {
-        const response = await fetch('//api/movies', {
+        const response = await fetch('/api/movies', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

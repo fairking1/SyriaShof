@@ -236,7 +236,7 @@
             submitBtn.textContent = currentLang === 'ar' ? 'جاري الإرسال...' : 'Sending...';
 
             try {
-                const response = await fetch('//api/report', {
+                const response = await fetch('/api/report', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
