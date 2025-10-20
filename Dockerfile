@@ -13,6 +13,7 @@ RUN npm install --production
 # Copy application files
 COPY server.js ./
 COPY routes ./routes
+COPY middleware ./middleware
 COPY public ./public
 
 # Create a non-root user
