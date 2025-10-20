@@ -97,6 +97,14 @@ const router = {
         document.getElementById('loginForm').style.display = 'block';
         document.getElementById('registerForm').style.display = 'none';
         document.getElementById('verifyForm').style.display = 'none';
+        document.getElementById('forgotPasswordForm').style.display = 'none';
+        
+        // Close settings modal if somehow open
+        const settingsModal = document.getElementById('settingsModal');
+        if (settingsModal && settingsModal.classList.contains('active')) {
+            settingsModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
         
         // Initialize auth listeners if not already done
         if (!document.getElementById('authPage').dataset.initialized) {
@@ -113,6 +121,7 @@ const router = {
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('registerForm').style.display = 'block';
         document.getElementById('verifyForm').style.display = 'none';
+        document.getElementById('forgotPasswordForm').style.display = 'none';
         
         // Initialize auth listeners if not already done
         if (!document.getElementById('authPage').dataset.initialized) {
@@ -129,6 +138,7 @@ const router = {
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('registerForm').style.display = 'none';
         document.getElementById('verifyForm').style.display = 'block';
+        document.getElementById('forgotPasswordForm').style.display = 'none';
         
         // Initialize auth listeners if not already done
         if (!document.getElementById('authPage').dataset.initialized) {
@@ -817,12 +827,27 @@ function openSettings() {
 }
 
 function closeSettings() {
-    document.getElementById('settingsModal').classList.remove('active');
+    const settingsModal = document.getElementById('settingsModal');
+    if (settingsModal) {
+        settingsModal.classList.remove('active');
+    }
     document.body.style.overflow = 'auto';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmNewPassword').value = '';
-    document.getElementById('passwordErrorMsg').style.display = 'none';
-    router.navigate('/'); // Navigate back to home
+    
+    // Clear password fields and error messages
+    const newPasswordField = document.getElementById('newPassword');
+    const confirmPasswordField = document.getElementById('confirmNewPassword');
+    const errorMsg = document.getElementById('passwordErrorMsg');
+    
+    if (newPasswordField) newPasswordField.value = '';
+    if (confirmPasswordField) confirmPasswordField.value = '';
+    if (errorMsg) errorMsg.style.display = 'none';
+    
+    // Only navigate if user is logged in
+    if (currentUser) {
+        router.navigate('/'); // Navigate back to home
+    } else {
+        router.navigate('/login'); // Navigate to login if somehow logged out
+    }
 }
 
 function openReportPage() {
@@ -882,6 +907,13 @@ async function handleChangePassword() {
 async function handleLogout() {
     console.log('🚪 Logging out user');
     
+    // Close settings modal if open
+    const settingsModal = document.getElementById('settingsModal');
+    if (settingsModal && settingsModal.classList.contains('active')) {
+        settingsModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+    
     // Call logout API to invalidate session on server
     if (sessionToken) {
         try {
@@ -904,6 +936,18 @@ async function handleLogout() {
     localStorage.removeItem('userEmail');
     sessionToken = null;
     currentUser = null;
+    
+    // Clear main app initialization flag to force re-initialization on next login
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp) {
+        delete mainApp.dataset.initialized;
+    }
+    
+    // Clear auth page initialization flag too
+    const authPage = document.getElementById('authPage');
+    if (authPage) {
+        delete authPage.dataset.initialized;
+    }
     
     console.log('✅ Logout complete');
     router.navigate('/login'); // Use router instead of reload

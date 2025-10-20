@@ -61,7 +61,11 @@ router.post('/', async (req, res) => {
           });
         } else {
           lastError = data;
-          console.error(`❌ Resend error (attempt ${attempt}/${maxRetries}):`, data);
+          console.error(`❌ Resend error (attempt ${attempt}/${maxRetries}):`, {
+            status: response.status,
+            statusText: response.statusText,
+            error: data
+          });
           
           // Don't retry on certain errors
           if (response.status === 400 || response.status === 404) {
