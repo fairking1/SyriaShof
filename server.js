@@ -25,11 +25,13 @@ const authRouter = require('./routes/auth');
 const moviesRouter = require('./routes/movies');
 const sendEmailRouter = require('./routes/send-email');
 const reportRouter = require('./routes/report');
+const adminRouter = require('./routes/admin');
 
 app.use('/api/auth', authRouter);
 app.use('/api/movies', moviesRouter);
 app.use('/api/send-email', sendEmailRouter);
 app.use('/api/report', reportRouter);
+app.use('/api/admin', adminRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -81,6 +83,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`   - POST /api/movies`);
     console.log(`   - POST /api/send-email`);
     console.log(`   - POST /api/report`);
+    console.log(`   - POST /api/admin/* (Admin Panel)`);
     console.log(`   - GET  /api/health`);
 });
 
