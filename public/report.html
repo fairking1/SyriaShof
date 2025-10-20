@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Syria Shof - Report a Problem">
+    <title>Report - Syria Shof</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .report-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            border: 2px solid var(--syria-green);
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .report-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .report-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--syria-green);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-select option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .form-textarea {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 150px;
+            transition: all 0.3s;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--syria-green);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .submit-btn {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 122, 61, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: var(--light-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <div class="syria-flag" style="width: 60px; height: 40px; margin: 0 auto 20px;">
+                <div class="flag-stripe flag-green"></div>
+                <div class="flag-stripe flag-white"></div>
+                <div class="flag-stripe flag-black"></div>
+                <div class="stars-container">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+            </div>
+            <h1 data-ar="الإبلاغ عن مشكلة" data-en="Report a Problem">الإبلاغ عن مشكلة</h1>
+            <p style="color: rgba(255,255,255,0.7);" data-ar="ساعدنا في تحسين Syria Shof" data-en="Help us improve Syria Shof">ساعدنا في تحسين Syria Shof</p>
+        </div>
+
+        <form class="report-form" id="reportForm">
+            <div class="form-group">
+                <label class="form-label" data-ar="نوع المشكلة" data-en="Problem Type">نوع المشكلة</label>
+                <select class="form-select" id="problemCategory" required>
+                    <option value="" data-ar="اختر نوع المشكلة..." data-en="Select problem type...">اختر نوع المشكلة...</option>
+                    <option value="video_not_working" data-ar="الفيديو لا يعمل" data-en="Video Not Working">الفيديو لا يعمل</option>
+                    <option value="login_issue" data-ar="مشكلة في تسجيل الدخول" data-en="Login Issue">مشكلة في تسجيل الدخول</option>
+                    <option value="bug" data-ar="خطأ في الموقع" data-en="Website Bug">خطأ في الموقع</option>
+                    <option value="feature_request" data-ar="اقتراح ميزة جديدة" data-en="Feature Request">اقتراح ميزة جديدة</option>
+                    <option value="account_issue" data-ar="مشكلة في الحساب" data-en="Account Issue">مشكلة في الحساب</option>
+                    <option value="content_issue" data-ar="مشكلة في المحتوى" data-en="Content Issue">مشكلة في المحتوى</option>
+                    <option value="other" data-ar="أخرى" data-en="Other">أخرى</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" data-ar="وصف المشكلة" data-en="Problem Description">وصف المشكلة</label>
+                <textarea 
+                    class="form-textarea" 
+                    id="problemDescription" 
+                    placeholder="اشرح المشكلة بالتفصيل..." 
+                    data-ar="اشرح المشكلة بالتفصيل..." 
+                    data-en="Describe the problem in detail..."
+                    maxlength="1000"
+                    required></textarea>
+                <div class="char-count">
+                    <span id="charCount">0</span> / 1000
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn" data-ar="إرسال التقرير" data-en="Submit Report">إرسال التقرير</button>
+            
+            <p class="error-msg" id="reportErrorMsg"></p>
+            <p class="success-msg" id="reportSuccessMsg" style="display: none;"></p>
+        </form>
+
+        <div class="back-link">
+            <a href="/" data-ar="← العودة إلى الصفحة الرئيسية" data-en="← Back to Home">← العودة إلى الصفحة الرئيسية</a>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentLang = 'ar';
+        let userEmail = localStorage.getItem('userEmail') || 'unknown@user.com';
+        let sessionToken = localStorage.getItem('sessionToken');
+
+        // Character counter
+        document.getElementById('problemDescription').addEventListener('input', (e) => {
+            document.getElementById('charCount').textContent = e.target.value.length;
+        });
+
+        // Form submission
+        document.getElementById('reportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const category = document.getElementById('problemCategory').value;
+            const description = document.getElementById('problemDescription').value;
+            const errorMsg = document.getElementById('reportErrorMsg');
+            const successMsg = document.getElementById('reportSuccessMsg');
+            const submitBtn = document.getElementById('submitBtn');
+
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            if (!category) {
+                errorMsg.textContent = currentLang === 'ar' ? 'الرجاء اختيار نوع المشكلة' : 'Please select problem type';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (!description || description.trim().length < 10) {
+                errorMsg.textContent = currentLang === 'ar' ? 'الرجاء وصف المشكلة بتفصيل أكثر (10 أحرف على الأقل)' : 'Please describe the problem in more detail (at least 10 characters)';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = currentLang === 'ar' ? 'جاري الإرسال...' : 'Sending...';
+
+            try {
+                const response = await fetch('//api/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        category: category,
+                        description: description,
+                        email: userEmail,
+                        sessionToken: sessionToken
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successMsg.textContent = currentLang === 'ar' ? '✅ تم إرسال التقرير بنجاح! شكراً لمساعدتك.' : '✅ Report sent successfully! Thank you for your help.';
+                    successMsg.style.display = 'block';
+                    document.getElementById('reportForm').reset();
+                    document.getElementById('charCount').textContent = '0';
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                } else {
+                    errorMsg.textContent = data.error || (currentLang === 'ar' ? 'خطأ في إرسال التقرير' : 'Error sending report');
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.textContent = currentLang === 'ar' ? 'خطأ في الاتصال بالخادم' : 'Server connection error';
+                errorMsg.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = currentLang === 'ar' ? 'إرسال التقرير' : 'Submit Report';
+            }
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+

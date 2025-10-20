@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Syria Shof - منصة لمشاهدة الأفلام والمسلسلات السورية">
+    <title>Syria Shof - شوف سوريا</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+    <!-- Login/Register Page -->
+    <div class="auth-page" id="authPage">
+        <div class="auth-container">
+            <div class="logo-container">
+                <div class="syria-flag">
+                    <div class="flag-stripe flag-green"></div>
+                    <div class="flag-stripe flag-white"></div>
+                    <div class="flag-stripe flag-black"></div>
+                    <div class="stars-container">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <div class="logo-text">Syria Shof</div>
+            </div>
+
+            <!-- Login Form -->
+            <div class="auth-form" id="loginForm">
+                <h2 class="auth-title" data-ar="تسجيل الدخول" data-en="Login">تسجيل الدخول</h2>
+                <input type="email" class="auth-input" id="loginEmail" placeholder="البريد الإلكتروني" data-ar="البريد الإلكتروني" data-en="Email" autocomplete="email">
+                <input type="password" class="auth-input" id="loginPassword" placeholder="كلمة المرور" data-ar="كلمة المرور" data-en="Password" autocomplete="current-password">
+                <div class="remember-me">
+                    <input type="checkbox" id="rememberMe">
+                    <label for="rememberMe" data-ar="تذكرني" data-en="Remember me">تذكرني</label>
+                </div>
+                <div id="recaptcha-login"></div>
+                <button class="auth-btn" id="loginBtn" data-ar="دخول" data-en="Login">دخول</button>
+                <p class="forgot-password">
+                    <a href="#" id="forgotPasswordLink" data-ar="نسيت كلمة المرور؟" data-en="Forgot Password?">نسيت كلمة المرور؟</a>
+                </p>
+                <p class="auth-switch" data-ar="ليس لديك حساب؟" data-en="Don't have an account?">ليس لديك حساب؟ 
+                    <a href="/signup" data-route id="showRegister" data-ar="سجل الآن" data-en="Register now">سجل الآن</a>
+                </p>
+                <p class="error-msg" id="loginErrorMsg"></p>
+            </div>
+
+            <!-- Register Form -->
+            <div class="auth-form" id="registerForm" style="display: none;">
+                <h2 class="auth-title" data-ar="إنشاء حساب جديد" data-en="Create Account">إنشاء حساب جديد</h2>
+                <input type="email" class="auth-input" id="registerEmail" placeholder="البريد الإلكتروني" data-ar="البريد الإلكتروني" data-en="Email" autocomplete="email">
+                <input type="password" class="auth-input" id="registerPassword" placeholder="كلمة المرور" data-ar="كلمة المرور" data-en="Password" autocomplete="new-password">
+                <input type="password" class="auth-input" id="registerConfirmPassword" placeholder="تأكيد كلمة المرور" data-ar="تأكيد كلمة المرور" data-en="Confirm Password" autocomplete="new-password">
+                <div id="recaptcha-register"></div>
+                <button class="auth-btn" id="registerBtn" data-ar="تسجيل" data-en="Register">تسجيل</button>
+                <p class="auth-switch" data-ar="لديك حساب بالفعل؟" data-en="Already have an account?">لديك حساب بالفعل؟ 
+                    <a href="/login" data-route id="showLogin" data-ar="سجل دخولك" data-en="Login">سجل دخولك</a>
+                </p>
+                <p class="error-msg" id="registerErrorMsg"></p>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div class="auth-form" id="forgotPasswordForm" style="display: none;">
+                <div class="verification-icon">🔑</div>
+                <h2 class="auth-title" data-ar="إعادة تعيين كلمة المرور" data-en="Reset Password">إعادة تعيين كلمة المرور</h2>
+                <p class="verification-text" data-ar="أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين" data-en="Enter your email and we'll send you a reset link">
+                    أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين
+                </p>
+                <input type="email" class="auth-input" id="forgotPasswordEmail" placeholder="البريد الإلكتروني" data-ar="البريد الإلكتروني" data-en="Email" autocomplete="email">
+                <button class="auth-btn" id="sendResetLinkBtn" data-ar="إرسال رابط إعادة التعيين" data-en="Send Reset Link">إرسال رابط إعادة التعيين</button>
+                <p class="auth-switch">
+                    <a href="/login" data-route id="backToLoginFromForgot" data-ar="العودة إلى تسجيل الدخول" data-en="Back to Login">العودة إلى تسجيل الدخول</a>
+                </p>
+                <p class="error-msg" id="forgotPasswordErrorMsg"></p>
+                <p class="success-msg" id="forgotPasswordSuccessMsg" style="display: none;"></p>
+            </div>
+
+            <!-- Email Verification Form -->
+            <div class="auth-form" id="verifyForm" style="display: none;">
+                <div class="verification-icon">📧</div>
+                <h2 class="auth-title" data-ar="تحقق من بريدك الإلكتروني" data-en="Verify Your Email">تحقق من بريدك الإلكتروني</h2>
+                <p class="verification-text" data-ar="لقد أرسلنا رمز التحقق المكون من 6 أرقام إلى" data-en="We sent a 6-digit verification code to">
+                    لقد أرسلنا رمز التحقق المكون من 6 أرقام إلى
+                </p>
+                <p class="verification-email" id="verifyEmailDisplay"></p>
+                <input type="text" class="auth-input verification-code-input" id="verificationCodeInput" placeholder="000000" maxlength="6" autocomplete="off" inputmode="numeric">
+                <p class="verification-hint" data-ar="أدخل الرمز المكون من 6 أرقام" data-en="Enter the 6-digit code">
+                    أدخل الرمز المكون من 6 أرقام
+                </p>
+                <button class="auth-btn" id="verifyBtn" data-ar="تحقق" data-en="Verify">تحقق</button>
+                <button class="auth-btn-secondary" id="resendCodeBtn" data-ar="إعادة إرسال الرمز" data-en="Resend Code">إعادة إرسال الرمز</button>
+                <p class="auth-switch">
+                    <a href="/login" data-route id="backToLogin" data-ar="العودة إلى تسجيل الدخول" data-en="Back to Login">العودة إلى تسجيل الدخول</a>
+                </p>
+                <p class="error-msg" id="verifyErrorMsg"></p>
+                <p class="success-msg" id="devCodeDisplay" style="display: none;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="main-app" id="mainApp">
+        <header>
+            <div class="header-logo">
+                <div class="syria-flag">
+                    <div class="flag-stripe flag-green"></div>
+                    <div class="flag-stripe flag-white"></div>
+                    <div class="flag-stripe flag-black"></div>
+                    <div class="stars-container">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <h1>Syria Shof</h1>
+            </div>
+            <div class="header-controls">
+                <button class="icon-btn" id="favoritesBtn" title="المفضلة">
+                    <span>❤️</span>
+                    <span class="badge" id="favoritesBadge">0</span>
+                </button>
+                <div class="user-info">
+                    <span id="userEmail" class="user-email"></span>
+                    <button class="icon-btn" id="settingsBtn" title="الإعدادات">
+                        <span>⚙️</span>
+                    </button>
+                </div>
+                <button class="lang-switch" id="langBtn">English</button>
+                <button class="menu-toggle" id="menuToggle">☰</button>
+            </div>
+        </header>
+
+        <div class="mobile-menu" id="mobileMenu">
+            <button class="close-menu" id="closeMenu">×</button>
+            <nav class="menu-nav">
+                <a href="/" data-route class="menu-item" data-ar="الرئيسية" data-en="Home">الرئيسية</a>
+                <a href="/" data-route class="menu-item" data-ar="الأفلام" data-en="Movies">الأفلام</a>
+                <a href="/" data-route class="menu-item" data-ar="المسلسلات" data-en="Series">المسلسلات</a>
+                <a href="/" data-route class="menu-item" data-ar="المفضلة" data-en="Favorites">المفضلة</a>
+            </nav>
+        </div>
+
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-box" id="searchBox" placeholder="ابحث عن الأفلام والمسلسلات...">
+            <button class="filter-btn" id="filterBtn">⚙️</button>
+        </div>
+
+        <div class="filter-panel" id="filterPanel">
+            <div class="filter-content">
+                <h3 data-ar="التصنيفات" data-en="Categories">التصنيفات</h3>
+                <div class="filter-tags" id="categoryFilters">
+                    <button class="filter-tag active" data-category="all" data-ar="الكل" data-en="All">الكل</button>
+                    <button class="filter-tag" data-category="movie" data-ar="أفلام" data-en="Movies">أفلام</button>
+                    <button class="filter-tag" data-category="series" data-ar="مسلسلات" data-en="Series">مسلسلات</button>
+                    <button class="filter-tag" data-category="documentary" data-ar="وثائقي" data-en="Documentary">وثائقي</button>
+                </div>
+                
+                <h3 data-ar="النوع" data-en="Genre">النوع</h3>
+                <div class="filter-tags" id="genreFilters">
+                    <button class="filter-tag active" data-genre="all" data-ar="الكل" data-en="All">الكل</button>
+                    <button class="filter-tag" data-genre="action" data-ar="أكشن" data-en="Action">أكشن</button>
+                    <button class="filter-tag" data-genre="comedy" data-ar="كوميدي" data-en="Comedy">كوميدي</button>
+                    <button class="filter-tag" data-genre="drama" data-ar="دراما" data-en="Drama">دراما</button>
+                    <button class="filter-tag" data-genre="thriller" data-ar="إثارة" data-en="Thriller">إثارة</button>
+                    <button class="filter-tag" data-genre="horror" data-ar="رعب" data-en="Horror">رعب</button>
+                    <button class="filter-tag" data-genre="romance" data-ar="رومانسي" data-en="Romance">رومانسي</button>
+                </div>
+
+                <h3 data-ar="ترتيب حسب" data-en="Sort By">ترتيب حسب</h3>
+                <div class="filter-tags" id="sortFilters">
+                    <button class="filter-tag active" data-sort="recent" data-ar="الأحدث" data-en="Recent">الأحدث</button>
+                    <button class="filter-tag" data-sort="rating" data-ar="الأعلى تقييماً" data-en="Top Rated">الأعلى تقييماً</button>
+                    <button class="filter-tag" data-sort="name" data-ar="الاسم" data-en="Name">الاسم</button>
+                    <button class="filter-tag" data-sort="year" data-ar="السنة" data-en="Year">السنة</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trending Section -->
+        <div class="trending-section" id="trendingSection">
+            <h2 class="section-title" data-ar="🔥 الأكثر مشاهدة" data-en="🔥 Trending Now">🔥 الأكثر مشاهدة</h2>
+            <div class="trending-carousel" id="trendingCarousel">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
+        <!-- Continue Watching -->
+        <div class="content-section" id="continueWatchingSection" style="display: none;">
+            <div class="section-header">
+                <h2 class="section-title" data-ar="⏯️ واصل المشاهدة" data-en="⏯️ Continue Watching">⏯️ واصل المشاهدة</h2>
+            </div>
+            <div class="video-grid continue-watching-grid" id="continueWatchingGrid"></div>
+        </div>
+
+        <!-- All Movies -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title" data-ar="🎬 جميع الأفلام" data-en="🎬 All Movies">🎬 جميع الأفلام</h2>
+                <div class="view-controls">
+                    <button class="view-btn active" data-view="grid" title="Grid View">⊞</button>
+                    <button class="view-btn" data-view="list" title="List View">☰</button>
+                </div>
+            </div>
+            <div class="video-grid" id="videoGrid"></div>
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <div class="favorites-panel" id="favoritesPanel">
+            <div class="panel-header">
+                <h2 data-ar="المفضلة" data-en="Favorites">المفضلة</h2>
+                <button class="close-panel" id="closeFavoritesPanel">×</button>
+            </div>
+            <div class="favorites-content" id="favoritesContent">
+                <p class="empty-message" data-ar="لا توجد عناصر في المفضلة" data-en="No items in favorites">لا توجد عناصر في المفضلة</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div class="modal" id="videoModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">×</span>
+            <div class="video-player" id="videoPlayer"></div>
+            <div class="video-details">
+                <div class="video-header">
+                    <h2 id="modalTitle"></h2>
+                    <button class="favorite-btn" id="modalFavoriteBtn">
+                        <span class="heart">♡</span>
+                    </button>
+                </div>
+                <div class="video-meta-info">
+                    <span class="meta-badge" id="modalYear">2024</span>
+                    <span class="meta-badge">HD</span>
+                    <span class="meta-badge" id="modalCategory"></span>
+                </div>
+
+                <!-- Rating System -->
+                <div class="rating-section">
+                    <div class="rating-display">
+                        <span class="rating-label" data-ar="التقييم:" data-en="Rating:">التقييم:</span>
+                        <div class="stars-display" id="averageRating">
+                            <span class="star-empty">☆</span>
+                            <span class="star-empty">☆</span>
+                            <span class="star-empty">☆</span>
+                            <span class="star-empty">☆</span>
+                            <span class="star-empty">☆</span>
+                        </div>
+                        <span class="rating-count" id="ratingCount">(0)</span>
+                    </div>
+                    <div class="rating-input">
+                        <span class="rating-label" data-ar="قيّم الفيلم:" data-en="Rate this movie:">قيّم الفيلم:</span>
+                        <div class="stars-input" id="ratingStars">
+                            <span class="star-rate" data-rating="1">★</span>
+                            <span class="star-rate" data-rating="2">★</span>
+                            <span class="star-rate" data-rating="3">★</span>
+                            <span class="star-rate" data-rating="4">★</span>
+                            <span class="star-rate" data-rating="5">★</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Server Selection -->
+                <div class="server-section">
+                    <h3 class="server-title" data-ar="الخوادم المتاحة" data-en="Available Servers">الخوادم المتاحة</h3>
+                    <div class="server-buttons" id="serverButtons">
+                        <!-- Servers will be populated dynamically -->
+                    </div>
+                </div>
+
+                <p class="video-description" id="modalDescription"></p>
+                <div class="video-actions">
+                    <button class="action-btn primary" id="openMoviePage">
+                        <span>🎬</span>
+                        <span data-ar="فتح صفحة الفيلم" data-en="Open Movie Page">فتح صفحة الفيلم</span>
+                    </button>
+                    <button class="action-btn" id="shareBtn">
+                        <span>🔗</span>
+                        <span data-ar="مشاركة" data-en="Share">مشاركة</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content settings-content">
+            <span class="close-modal" id="closeSettings">×</span>
+            <h2 class="settings-title" data-ar="الإعدادات" data-en="Settings">الإعدادات</h2>
+            
+            <div class="settings-section">
+                <h3 data-ar="الحساب" data-en="Account">الحساب</h3>
+                <div class="settings-item">
+                    <label data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</label>
+                    <input type="text" id="settingsEmail" class="settings-input" readonly>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 data-ar="تغيير كلمة المرور" data-en="Change Password">تغيير كلمة المرور</h3>
+                <input type="password" class="settings-input" id="newPassword" placeholder="كلمة المرور الجديدة" data-ar="كلمة المرور الجديدة" data-en="New Password">
+                <input type="password" class="settings-input" id="confirmNewPassword" placeholder="تأكيد كلمة المرور" data-ar="تأكيد كلمة المرور" data-en="Confirm Password">
+                <button class="auth-btn" id="changePasswordBtn" data-ar="حفظ كلمة المرور" data-en="Save Password">حفظ كلمة المرور</button>
+                <p class="error-msg" id="passwordErrorMsg"></p>
+                <p class="success-msg" id="passwordSuccessMsg" style="display: none; color: #00A651; margin-top: 10px;"></p>
+            </div>
+
+            <div class="settings-section">
+                <button class="report-btn" id="reportBtn" data-ar="📝 الإبلاغ عن مشكلة" data-en="📝 Report a Problem">📝 الإبلاغ عن مشكلة</button>
+                <button class="logout-btn" id="logoutBtn" data-ar="تسجيل الخروج" data-en="Logout">تسجيل الخروج</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
