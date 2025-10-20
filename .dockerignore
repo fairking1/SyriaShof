@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.env
+.env.local
+.git
+.gitignore
+README.md
+*.md
+netlify
+.netlify
+netlify.toml
+database
+.vscode
+.idea
+*.log
+.DS_Store
+

@@ -1,0 +1,19 @@
+# Syria Shof - Environment Variables
+# Copy this file to .env and fill in your values
+
+# Server Configuration
+NODE_ENV=production
+PORT=3000
+
+# Database (Neon PostgreSQL)
+DATABASE_URL=postgresql://user:password@hostname/database?sslmode=require
+
+# Email Service (Resend)
+RESEND_API_KEY=re_your_resend_api_key_here
+
+# reCAPTCHA (v2 Checkbox)
+RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key_here
+
+# Discord Webhook (for reports)
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your_webhook_url_here
+
