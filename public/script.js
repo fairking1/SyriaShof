@@ -79,7 +79,12 @@ const router = {
         
         // Initialize main app if not already done
         if (!document.getElementById('mainApp').dataset.initialized) {
-            document.getElementById('userEmail').textContent = currentUser.email;
+            const userEmailEl = document.getElementById('userEmail');
+            if (userEmailEl && currentUser) userEmailEl.textContent = currentUser.email;
+            
+            const userAvatar = document.getElementById('userAvatar');
+            if (userAvatar && currentUser) userAvatar.textContent = currentUser.email.charAt(0).toUpperCase();
+            
             loadFavorites();
             initializeEventListeners();
             renderTrending();
@@ -174,7 +179,13 @@ const router = {
         if (!document.getElementById('mainApp').dataset.initialized) {
             document.getElementById('authPage').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('userEmail').textContent = currentUser.email;
+            
+            const userEmailEl = document.getElementById('userEmail');
+            if (userEmailEl && currentUser) userEmailEl.textContent = currentUser.email;
+            
+            const userAvatar = document.getElementById('userAvatar');
+            if (userAvatar && currentUser) userAvatar.textContent = currentUser.email.charAt(0).toUpperCase();
+            
             loadFavorites();
             initializeEventListeners();
             renderTrending();
@@ -205,11 +216,11 @@ function initRecaptcha() {
     // Wait for grecaptcha to be ready
     if (typeof grecaptcha !== 'undefined' && siteKey && siteKey !== 'YOUR_RECAPTCHA_V2_SITE_KEY') {
         try {
-            recaptchaLoginWidget = grecaptcha.render('recaptcha-login', {
+            recaptchaLoginWidget = grecaptcha.render('recaptcha-login-container', {
                 'sitekey': siteKey,
-                'theme': 'dark' // Matches your Syrian flag theme
+                'theme': 'dark'
             });
-            recaptchaRegisterWidget = grecaptcha.render('recaptcha-register', {
+            recaptchaRegisterWidget = grecaptcha.render('recaptcha-register-container', {
                 'sitekey': siteKey,
                 'theme': 'dark'
             });
@@ -383,7 +394,19 @@ function showAuthPage() {
 function showMainApp() {
     document.getElementById('authPage').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
-    document.getElementById('userEmail').textContent = currentUser.email;
+    
+    // Update user info if element exists
+    const userEmailEl = document.getElementById('userEmail');
+    if (userEmailEl && currentUser) {
+        userEmailEl.textContent = currentUser.email;
+    }
+    
+    // Update user avatar
+    const userAvatar = document.getElementById('userAvatar');
+    if (userAvatar && currentUser) {
+        userAvatar.textContent = currentUser.email.charAt(0).toUpperCase();
+    }
+    
     loadFavorites();
     initializeEventListeners();
     renderVideos(videos);
@@ -492,7 +515,8 @@ async function handleForgotPassword() {
 async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
+    const rememberMeEl = document.getElementById('rememberMe');
+    const rememberMe = rememberMeEl ? rememberMeEl.checked : false;
     const errorMsg = document.getElementById('loginErrorMsg');
 
     if (!email || !password) {
@@ -563,7 +587,8 @@ async function handleRegister() {
     const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('registerConfirmPassword').value;
-    const rememberMe = document.getElementById('rememberMe') ? document.getElementById('rememberMe').checked : false;
+    const rememberMeEl = document.getElementById('rememberMe');
+    const rememberMe = rememberMeEl ? rememberMeEl.checked : false;
     const errorMsg = document.getElementById('registerErrorMsg');
 
     if (!email || !password || !confirmPassword) {
@@ -728,13 +753,16 @@ async function handleResendCode() {
 // Main App Event Listeners
 function initializeEventListeners() {
     // Language Toggle
-    document.getElementById('langBtn').addEventListener('click', toggleLanguage);
+    const langBtn = document.getElementById('langBtn');
+    if (langBtn) langBtn.addEventListener('click', toggleLanguage);
 
     // Search
-    document.getElementById('searchBox').addEventListener('input', searchVideos);
+    const searchBox = document.getElementById('searchInput');
+    if (searchBox) searchBox.addEventListener('input', searchVideos);
 
     // Filter
-    document.getElementById('filterBtn').addEventListener('click', toggleFilters);
+    const filterBtn = document.getElementById('filterBtn');
+    if (filterBtn) filterBtn.addEventListener('click', toggleFilters);
     
     // Category Filters
     const categoryFilters = document.querySelectorAll('[data-category]');
@@ -781,44 +809,70 @@ function initializeEventListeners() {
     });
 
     // Modal
-    document.getElementById('closeModal').addEventListener('click', closeModal);
-    document.getElementById('videoModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
+    const closeModal = document.getElementById('closeModal');
+    const videoModal = document.getElementById('movieModal');
+    if (closeModal) closeModal.addEventListener('click', () => closeMovieModal());
+    if (videoModal) videoModal.addEventListener('click', function(e) {
+        if (e.target === this) closeMovieModal();
     });
 
     // Favorites
-    document.getElementById('favoritesBtn').addEventListener('click', toggleFavoritesPanel);
-    document.getElementById('closeFavoritesPanel').addEventListener('click', closeFavoritesPanel);
+    const favoritesBtn = document.getElementById('favoritesBtn');
+    const closeFavoritesPanel = document.getElementById('closeFavoritesPanel');
+    if (favoritesBtn) favoritesBtn.addEventListener('click', toggleFavoritesPanel);
+    if (closeFavoritesPanel) closeFavoritesPanel.addEventListener('click', closeFavoritesPanel);
 
     // Mobile Menu
-    document.getElementById('menuToggle').addEventListener('click', toggleMobileMenu);
-    document.getElementById('closeMenu').addEventListener('click', closeMobileMenu);
+    const menuToggle = document.getElementById('menuToggle');
+    const closeMenu = document.getElementById('closeMenu');
+    if (menuToggle) menuToggle.addEventListener('click', toggleMobileMenu);
+    if (closeMenu) closeMenu.addEventListener('click', closeMobileMenu);
 
     // Modal Favorite Button
-    document.getElementById('modalFavoriteBtn').addEventListener('click', toggleCurrentVideoFavorite);
+    const modalFavoriteBtn = document.getElementById('favoriteBtn');
+    if (modalFavoriteBtn) modalFavoriteBtn.addEventListener('click', toggleCurrentVideoFavorite);
 
     // Share Button
-    document.getElementById('shareBtn').addEventListener('click', shareVideo);
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) shareBtn.addEventListener('click', shareVideo);
 
     // Settings
-    document.getElementById('settingsBtn').addEventListener('click', openSettings);
-    document.getElementById('closeSettings').addEventListener('click', closeSettings);
-    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-    document.getElementById('changePasswordBtn').addEventListener('click', handleChangePassword);
-    document.getElementById('reportBtn').addEventListener('click', openReportPage);
+    const settingsBtn = document.getElementById('settingsBtn');
+    const closeSettingsBtn = document.getElementById('closeSettings');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const reportBtn = document.getElementById('reportBtn');
+    
+    if (settingsBtn) settingsBtn.addEventListener('click', openSettings);
+    if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+    if (changePasswordBtn) changePasswordBtn.addEventListener('click', handleChangePassword);
+    if (reportBtn) reportBtn.addEventListener('click', openReportPage);
 
     // Open Movie Page
-    document.getElementById('openMoviePage').addEventListener('click', openMoviePage);
+    const openMoviePageBtn = document.getElementById('openMoviePage');
+    if (openMoviePageBtn) openMoviePageBtn.addEventListener('click', openMoviePage);
 
     // Close on Escape
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeModal();
-            closeFavoritesPanel();
-            closeMobileMenu();
-            closeSettings();
+            closeMovieModal();
+            const favPanel = document.getElementById('favoritesModal');
+            if (favPanel) favPanel.classList.remove('active');
+            const settingsModal = document.getElementById('settingsModal');
+            if (settingsModal) settingsModal.classList.remove('active');
         }
     });
+}
+
+function closeMovieModal() {
+    const modal = document.getElementById('movieModal');
+    if (modal) {
+        modal.classList.remove('active');
+        const player = document.getElementById('moviePlayer');
+        if (player) player.pause();
+        document.body.style.overflow = 'auto';
+    }
 }
 
 // Settings Functions
