@@ -810,8 +810,10 @@ function initializeEventListeners() {
     const logoutBtn = document.getElementById('logoutBtn');
     const changePasswordBtn = document.getElementById('changePasswordBtn');
     const reportBtn = document.getElementById('reportBtn');
+    const userAvatar = document.getElementById('userAvatar');
     
     if (settingsBtn) settingsBtn.addEventListener('click', openSettings);
+    if (userAvatar) userAvatar.addEventListener('click', openSettings); // Profile pic opens settings
     if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     if (changePasswordBtn) changePasswordBtn.addEventListener('click', handleChangePassword);
@@ -1101,49 +1103,60 @@ function renderVideos(videosToRender) {
 // Open Video Modal
 async function openVideo(video) {
     currentVideoId = video.id;
-    const modal = document.getElementById('videoModal');
-    const player = document.getElementById('videoPlayer');
-    const title = document.getElementById('modalTitle');
-    const desc = document.getElementById('modalDescription');
-    const year = document.getElementById('modalYear');
-    const category = document.getElementById('modalCategory');
-    const favoriteBtn = document.getElementById('modalFavoriteBtn');
-    const serverButtons = document.getElementById('serverButtons');
+    const modal = document.getElementById('movieModal');
+    const player = document.getElementById('moviePlayer');
+    const title = document.getElementById('movieTitle');
+    const desc = document.getElementById('movieDescription');
+    const year = document.getElementById('movieYear');
+    const genre = document.getElementById('movieGenre');
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    
+    if (!modal || !title) {
+        console.error('[OpenVideo] Modal elements not found!');
+        return;
+    }
     
     title.textContent = currentLang === 'ar' ? video.titleAr : video.titleEn;
-    desc.textContent = currentLang === 'ar' ? video.descAr : video.descEn;
-    year.textContent = video.year;
-    category.textContent = getCategoryText(video.category);
+    if (desc) desc.textContent = currentLang === 'ar' ? video.descAr : video.descEn;
+    if (year) year.textContent = video.year;
+    if (genre) genre.textContent = getCategoryText(video.category);
     
     // Update favorite button
-    const isFavorite = favorites.includes(video.id);
-    favoriteBtn.classList.toggle('active', isFavorite);
-    const icon = favoriteBtn.querySelector('.material-symbols-outlined');
-    if (icon) {
-        icon.textContent = isFavorite ? 'check' : 'add';
+    if (favoriteBtn) {
+        const isFavorite = favorites.includes(video.id);
+        favoriteBtn.classList.toggle('active', isFavorite);
+        favoriteBtn.innerHTML = `<span class="material-symbols-outlined">${isFavorite ? 'check' : 'add'}</span> ${isFavorite ? 'In My List' : 'My List'}`;
+        
+        // Add click handler
+        favoriteBtn.onclick = () => toggleCurrentVideoFavorite();
     }
-    favoriteBtn.innerHTML = `<span class="material-symbols-outlined">${isFavorite ? 'check' : 'add'}</span> ${isFavorite ? 'In My List' : 'My List'}`;
     
     // Load rating
     await loadRating(video.id);
     
-    // Populate servers
-    serverButtons.innerHTML = '';
-    video.servers.forEach((server, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'server-btn' + (index === 0 ? ' active' : '');
-        btn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">cloud</span> ${server.name}`;
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            loadServer(server.url);
-        });
-        serverButtons.appendChild(btn);
-    });
-    
-    // Load first server by default
-    if (video.servers.length > 0) {
+    // Load first server by default if available
+    if (video.servers && video.servers.length > 0) {
         loadServer(video.servers[0].url);
+    }
+    
+    // Setup play button
+    const playBtn = document.getElementById('playBtn');
+    if (playBtn) {
+        playBtn.onclick = () => {
+            if (player) {
+                player.scrollIntoView({ behavior: 'smooth' });
+                const iframe = player.querySelector('iframe');
+                if (iframe) {
+                    iframe.focus();
+                }
+            }
+        };
+    }
+    
+    // Setup share button  
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+        shareBtn.onclick = () => shareVideo();
     }
     
     modal.classList.add('active');
@@ -1151,7 +1164,8 @@ async function openVideo(video) {
 }
 
 function loadServer(url) {
-    const player = document.getElementById('videoPlayer');
+    const player = document.getElementById('moviePlayer');
+    if (!player) return;
     player.innerHTML = `
         <iframe 
             src="${url}" 
@@ -1245,10 +1259,10 @@ function openMoviePage() {
 
 // Close Modal
 function closeModal() {
-    const modal = document.getElementById('videoModal');
-    const player = document.getElementById('videoPlayer');
-    player.innerHTML = '';
-    modal.classList.remove('active');
+    const modal = document.getElementById('movieModal');
+    const player = document.getElementById('moviePlayer');
+    if (player) player.innerHTML = '';
+    if (modal) modal.classList.remove('active');
     document.body.style.overflow = 'auto';
     currentVideoId = null;
 }
