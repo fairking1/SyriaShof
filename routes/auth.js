@@ -583,27 +583,46 @@ router.post('/', async (req, res) => {
     if (action === 'request-login-code') {
       const { email, password } = req.body;
       
+      console.log(`🔐 Login code request for: ${email}`);
+      
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password required' });
       }
       
       const sql = getDB();
       
-      // Check if user exists and password is correct
-      const users = await sql`SELECT * FROM users WHERE email = ${email}`;
-      
-      if (users.length === 0) {
-        return res.status(401).json({ error: 'Invalid email or password' });
-      }
-      
-      const user = users[0];
-      
-      // Verify password
-      const bcrypt = require('bcrypt');
-      const passwordMatch = await bcrypt.compare(password, user.password);
-      
-      if (!passwordMatch) {
-        return res.status(401).json({ error: 'Invalid email or password' });
+      try {
+        // Check if user exists and password is correct
+        const users = await sql`SELECT * FROM users WHERE email = ${email}`;
+        
+        if (users.length === 0) {
+          console.log(`❌ User not found: ${email}`);
+          return res.status(401).json({ error: 'Invalid email or password' });
+        }
+        
+        const user = users[0];
+        console.log(`✅ User found: ${email}, checking password...`);
+        
+        // Verify password
+        let bcrypt;
+        try {
+          bcrypt = require('bcrypt');
+        } catch (err) {
+          console.error('❌ bcrypt not installed!', err);
+          return res.status(500).json({ error: 'Server configuration error. Please contact admin.' });
+        }
+        
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        
+        if (!passwordMatch) {
+          console.log(`❌ Password mismatch for: ${email}`);
+          return res.status(401).json({ error: 'Invalid email or password' });
+        }
+        
+        console.log(`✅ Password verified for: ${email}`);
+      } catch (dbError) {
+        console.error('❌ Database error during login:', dbError);
+        return res.status(500).json({ error: 'Database error' });
       }
       
       // Generate 6-digit code
