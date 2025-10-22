@@ -189,13 +189,18 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Email and password required' });
       }
 
-      if (!recaptchaToken) {
-        return res.status(400).json({ error: 'reCAPTCHA verification required' });
-      }
+      // Check reCAPTCHA (skip for admin panel bypass)
+      if (recaptchaToken !== 'admin-bypass') {
+        if (!recaptchaToken) {
+          return res.status(400).json({ error: 'reCAPTCHA verification required' });
+        }
 
-      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
-      if (!isRecaptchaValid) {
-        return res.status(400).json({ error: 'reCAPTCHA verification failed' });
+        const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+        if (!isRecaptchaValid) {
+          return res.status(400).json({ error: 'reCAPTCHA verification failed' });
+        }
+      } else {
+        console.log('🛡️ Admin panel login - reCAPTCHA bypassed');
       }
 
       try {
