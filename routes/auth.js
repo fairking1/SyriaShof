@@ -612,7 +612,27 @@ router.post('/', async (req, res) => {
           return res.status(500).json({ error: 'Server configuration error. Please contact admin.' });
         }
         
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        let passwordMatch = false;
+        let needsPasswordUpgrade = false;
+        
+        // Try bcrypt comparison first (for new passwords)
+        try {
+          passwordMatch = await bcrypt.compare(password, user.password);
+        } catch (bcryptError) {
+          // Not a bcrypt hash, might be plain text (old password)
+          console.log(`⚠️ Password not bcrypt hashed, checking plain text for: ${email}`);
+          passwordMatch = (password === user.password);
+          needsPasswordUpgrade = true;
+        }
+        
+        // If bcrypt compare returned false, also try plain text (old password)
+        if (!passwordMatch && !needsPasswordUpgrade) {
+          if (password === user.password) {
+            console.log(`⚠️ Plain text password match for: ${email}, will upgrade to bcrypt`);
+            passwordMatch = true;
+            needsPasswordUpgrade = true;
+          }
+        }
         
         if (!passwordMatch) {
           console.log(`❌ Password mismatch for: ${email}`);
@@ -620,6 +640,18 @@ router.post('/', async (req, res) => {
         }
         
         console.log(`✅ Password verified for: ${email}`);
+        
+        // Upgrade old plain text password to bcrypt hash
+        if (needsPasswordUpgrade) {
+          console.log(`🔄 Upgrading password to bcrypt for: ${email}`);
+          const hashedPassword = await bcrypt.hash(password, 10);
+          await sql`
+            UPDATE users 
+            SET password = ${hashedPassword}
+            WHERE email = ${email}
+          `;
+          console.log(`✅ Password upgraded to bcrypt for: ${email}`);
+        }
       } catch (dbError) {
         console.error('❌ Database error during login:', dbError);
         return res.status(500).json({ error: 'Database error' });
