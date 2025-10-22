@@ -134,9 +134,9 @@
             </div>
             
             <nav class="nav-menu">
-                <a href="#" class="nav-link" data-route="/">Home</a>
-                <a href="#" class="nav-link" id="favoritesBtn">My List</a>
-                <a href="#" class="nav-link" id="settingsBtn">Settings</a>
+                <a href="#" class="nav-link" onclick="router.navigate('/'); return false;">Home</a>
+                <a href="#" class="nav-link" id="favoritesBtn" onclick="return false;">My List</a>
+                <a href="#" class="nav-link" id="settingsBtn" onclick="return false;">Settings</a>
                 
                 <div class="user-menu">
                     <div class="user-avatar" id="userAvatar">U</div>
@@ -279,7 +279,7 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script src="/script.js?v=2.0"></script>
+<script src="/script.js?v=6.0"></script>
 </body>
 </html>
 

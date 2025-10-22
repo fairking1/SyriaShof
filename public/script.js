@@ -1394,6 +1394,7 @@ function toggleCurrentVideoFavorite() {
 
 function updateFavoritesBadge() {
     const badge = document.getElementById('favoritesBadge');
+    if (!badge) return; // Badge doesn't exist in this layout
     badge.textContent = favorites.length;
     badge.style.display = favorites.length > 0 ? 'flex' : 'none';
 }
@@ -1419,29 +1420,35 @@ function getCurrentVideos() {
 
 // Favorites Panel
 function toggleFavoritesPanel() {
-    const panel = document.getElementById('favoritesPanel');
-    panel.classList.toggle('active');
-    if (panel.classList.contains('active')) {
+    const modal = document.getElementById('favoritesModal');
+    if (!modal) return;
+    modal.classList.toggle('active');
+    if (modal.classList.contains('active')) {
         updateFavoritesPanel();
     }
 }
 
 function closeFavoritesPanel() {
-    document.getElementById('favoritesPanel').classList.remove('active');
+    const modal = document.getElementById('favoritesModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
 }
 
 function updateFavoritesPanel() {
-    const content = document.getElementById('favoritesContent');
+    const grid = document.getElementById('favoritesGrid');
+    if (!grid) return;
+    
     const favoriteVideos = allVideos.filter(v => favorites.includes(v.id));
     
     if (favoriteVideos.length === 0) {
-        content.innerHTML = `<p class="empty-message">
+        grid.innerHTML = `<p class="empty-message" style="grid-column: 1/-1; text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
             ${currentLang === 'ar' ? 'لا توجد عناصر في المفضلة' : 'No items in favorites'}
         </p>`;
         return;
     }
     
-    content.innerHTML = '';
+    grid.innerHTML = '';
     favoriteVideos.forEach(video => {
         const card = document.createElement('div');
         card.className = 'video-card';
@@ -1468,7 +1475,7 @@ function updateFavoritesPanel() {
             closeFavoritesPanel();
         });
         
-        content.appendChild(card);
+        grid.appendChild(card);
     });
 }
 
