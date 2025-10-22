@@ -219,10 +219,10 @@ const videos = [
             { name: "Server 1", url: "https://uqload.cx/bndo1w5y5r1e.html" },
             { name: "Server 2", url: "https://uqload.cx/bndo1w5y5r1e.html" }
         ],
-        category: "movie",
+        category: "movies",
         genre: "comedy",
         year: 1996,
-        poster: "https://image.tmdb.org/t/p/w500/placeholder.jpg", // Add real poster URLs
+        poster: "https://image.tmdb.org/t/p/w500/placeholder.jpg",
         trending: true,
         views: 1250
     },
@@ -235,7 +235,7 @@ const videos = [
         servers: [
             { name: "Server 1", url: "https://aflam-fs1-cew.cdnz.quest/yh5chxippxikjnl75zpkr5b5xophfwyqzssmwecxhvz6ymjwm3se7vp3k6oq/v.mp4" }
         ],
-        category: "movie",
+        category: "movies",
         genre: "thriller",
         year: 1998,
         poster: "https://image.tmdb.org/t/p/w500/placeholder.jpg",
@@ -252,7 +252,7 @@ const videos = [
             { name: "Server 1", url: "https://aflam-store2-lhr.cdnz.quest/yh5ch2d5pxikjnl75zpkr2tyw3elrfeviwlpy5t64yofd3dvvmwxy4vexuda/v.mp4" },
             { name: "Server 2", url: "https://aflam-store2-lhr.cdnz.quest/yh5ch2d5pxikjnl75zpkr2tyw3elrfeviwlpy5t64yofd3dvvmwxy4vexuda/v.mp4" }
         ],
-        category: "movie",
+        category: "movies",
         genre: "thriller",
         year: 2016,
         poster: "https://image.tmdb.org/t/p/w500/placeholder.jpg",
@@ -268,8 +268,12 @@ const videos = [
         servers: [
             { name: "Server 1", url: "https://aflam-store1-gbf.cdnz.quest/yh5ca2cgpxikjnl75zo2r4d75w5l2g3otuyo6rbd5sv3mveczauncshphvva/v.mp4" }
         ],
-        category: "movie",
-        year: 2022
+        category: "movies",
+        genre: "sci-fi",
+        year: 2022,
+        poster: "https://image.tmdb.org/t/p/w500/placeholder.jpg",
+        trending: false,
+        views: 520
     }
 ];
 
@@ -721,8 +725,8 @@ function initializeEventListeners() {
     if (langBtn) langBtn.addEventListener('click', toggleLanguage);
 
     // Search
-    const searchBox = document.getElementById('searchInput');
-    if (searchBox) searchBox.addEventListener('input', searchVideos);
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.addEventListener('input', filterVideos);
 
     // Filter
     const filterBtn = document.getElementById('filterBtn');
@@ -1003,50 +1007,51 @@ function renderTrending() {
 
 // Render Continue Watching
 function renderContinueWatching() {
-    const section = document.getElementById('continueWatchingSection');
-    const grid = document.getElementById('continueWatchingGrid');
+    const carousel = document.getElementById('continueWatchingCarousel');
+    if (!carousel) return;
     
     if (continueWatching.length === 0) {
-        section.style.display = 'none';
+        carousel.innerHTML = '';
         return;
     }
     
-    section.style.display = 'block';
-    grid.innerHTML = '';
+    carousel.innerHTML = '';
     
     continueWatching.slice(0, 4).forEach(item => {
         const video = allVideos.find(v => v.id === item.id);
         if (!video) return;
         
         const card = document.createElement('div');
-        card.className = 'video-card continue-watching-card';
+        card.className = 'trending-card';
         const title = currentLang === 'ar' ? video.titleAr : video.titleEn;
         
         card.innerHTML = `
-            <div class="video-thumbnail">
+            <div class="trending-thumbnail">
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: ${item.progress || 0}%"></div>
                 </div>
                 <span class="material-symbols-outlined play-icon">play_circle</span>
             </div>
-            <div class="video-info">
-                <div class="video-title">${title}</div>
-                <div class="video-meta">
-                    <span>${item.progress || 0}%</span>
-                    <span>•</span>
-                    <span>${video.year}</span>
-                </div>
+            <div class="trending-info">
+                <h3>${title}</h3>
+                <p>${item.progress || 0}% • ${video.year}</p>
             </div>
         `;
         
         card.addEventListener('click', () => openVideo(video));
-        grid.appendChild(card);
+        carousel.appendChild(card);
     });
 }
 
 // Render Videos
 function renderVideos(videosToRender) {
-    const grid = document.getElementById('videoGrid');
+    const grid = document.getElementById('moviesGrid');
+    if (!grid) {
+        console.error('[Render] Movies grid not found!');
+        return;
+    }
+    
+    console.log('[Render] Rendering', videosToRender.length, 'videos');
     grid.innerHTML = '';
     
     if (videosToRender.length === 0) {
@@ -1250,7 +1255,9 @@ function closeModal() {
 
 // Search Videos
 function searchVideos() {
-    const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    const searchTerm = searchInput.value.toLowerCase();
     let filtered = allVideos.filter(video => 
         video.titleAr.toLowerCase().includes(searchTerm) || 
         video.titleEn.toLowerCase().includes(searchTerm)
@@ -1265,7 +1272,8 @@ function searchVideos() {
 
 // Filter Videos
 function filterVideos() {
-    const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+    const searchInput = document.getElementById('searchInput');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
     let filtered = allVideos;
     
     // Apply category filter
@@ -1323,7 +1331,7 @@ function toggleFilters() {
 
 // Toggle View
 function toggleView() {
-    const grid = document.getElementById('videoGrid');
+    const grid = document.getElementById('moviesGrid');
     if (currentView === 'list') {
         grid.classList.add('list-view');
     } else {
@@ -1391,7 +1399,8 @@ function updateFavoritesBadge() {
 }
 
 function getCurrentVideos() {
-    const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+    const searchInput = document.getElementById('searchInput');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
     let filtered = allVideos;
     
     if (currentCategory !== 'all') {
@@ -1544,8 +1553,10 @@ function toggleLanguage() {
 // Helper Functions
 function getCategoryText(category) {
     const categories = {
+        'movies': { ar: 'أفلام', en: 'Movies' },
+        'series': { ar: 'مسلسلات', en: 'Series' },
+        'documentaries': { ar: 'وثائقيات', en: 'Documentaries' },
         'movie': { ar: 'فيلم', en: 'Movie' },
-        'series': { ar: 'مسلسل', en: 'Series' },
         'documentary': { ar: 'وثائقي', en: 'Documentary' }
     };
     return categories[category] ? categories[category][currentLang] : category;
