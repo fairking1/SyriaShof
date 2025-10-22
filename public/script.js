@@ -527,8 +527,6 @@ async function handleRegister() {
     const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('registerConfirmPassword').value;
-    const rememberMeEl = document.getElementById('rememberMe');
-    const rememberMe = rememberMeEl ? rememberMeEl.checked : false;
     const errorMsg = document.getElementById('registerErrorMsg');
 
     if (!email || !password || !confirmPassword) {
@@ -1571,3 +1569,4 @@ function shareVideo() {
         }
     }
 }
+
