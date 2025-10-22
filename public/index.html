@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 </head>
 <body>
 
@@ -149,7 +150,7 @@
         <!-- Trending Section -->
         <section class="section">
             <div class="section-header">
-                <h2 class="section-title">🔥 Trending Now</h2>
+                <h2 class="section-title"><span class="material-symbols-outlined">local_fire_department</span> Trending Now</h2>
             </div>
             <div class="carousel">
                 <div class="carousel-track" id="trendingCarousel"></div>
@@ -159,7 +160,7 @@
         <!-- Continue Watching -->
         <section class="section">
             <div class="section-header">
-                <h2 class="section-title">▶️ Continue Watching</h2>
+                <h2 class="section-title"><span class="material-symbols-outlined">play_circle</span> Continue Watching</h2>
             </div>
             <div class="carousel">
                 <div class="carousel-track" id="continueWatchingCarousel"></div>
@@ -192,9 +193,9 @@
             <h1 id="movieTitle" style="font-size: 32px; margin-bottom: 20px;"></h1>
             
             <div class="movie-actions">
-                <button class="btn btn-primary" onclick="playMovie()">▶️ Play</button>
-                <button class="btn btn-secondary" id="favoriteBtn">+ My List</button>
-                <button class="btn btn-secondary" onclick="shareVideo()">Share</button>
+                <button class="btn btn-primary" onclick="playMovie()"><span class="material-symbols-outlined">play_arrow</span> Play</button>
+                <button class="btn btn-secondary" id="favoriteBtn"><span class="material-symbols-outlined">add</span> My List</button>
+                <button class="btn btn-secondary" onclick="shareVideo()"><span class="material-symbols-outlined">share</span> Share</button>
             </div>
             
             <div class="movie-info-grid">
@@ -278,7 +279,7 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script src="/script.js?v=2.0"></script>
+<script src="/script.js?v=3.0"></script>
 </body>
 </html>
 

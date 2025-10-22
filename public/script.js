@@ -285,7 +285,7 @@ async function checkSession() {
     sessionToken = localStorage.getItem('sessionToken');
     
     if (!sessionToken) {
-        console.log('📭 No session token found');
+        console.log('[Session] No session token found');
         router.navigate('/login');
         return;
     }
@@ -295,7 +295,7 @@ async function checkSession() {
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            console.log(`🔐 Verifying session (attempt ${attempt}/${maxRetries})`);
+            console.log(`[Session] Verifying session (attempt ${attempt}/${maxRetries})`);
             
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -314,14 +314,14 @@ async function checkSession() {
             const data = await response.json();
 
             if (response.ok && data.valid) {
-                console.log('✅ Session valid for:', data.email);
+                console.log('[Session] Valid for:', data.email);
                 currentUser = { email: data.email };
                 localStorage.setItem('userEmail', data.email); // Store email
                 router.handleRoute(); // Use router to show correct page
                 return;
             } else {
                 // Session invalid - clear and redirect
-                console.log('❌ Session invalid:', data.error);
+                console.log('[Session] Invalid:', data.error);
                 localStorage.removeItem('sessionToken');
                 localStorage.removeItem('userEmail');
                 sessionToken = null;
@@ -330,7 +330,7 @@ async function checkSession() {
                 return;
             }
         } catch (error) {
-            console.error(`❌ Session check error (attempt ${attempt}/${maxRetries}):`, error.message);
+            console.error(`[Session] Check error (attempt ${attempt}/${maxRetries}):`, error.message);
             
             if (error.name === 'AbortError') {
                 console.error('Session verification timeout');
@@ -338,7 +338,7 @@ async function checkSession() {
             
             // If it's the last attempt, clear session and redirect
             if (attempt === maxRetries) {
-                console.log('❌ All session verification attempts failed, logging out');
+                console.log('[Session] All verification attempts failed, logging out');
                 localStorage.removeItem('sessionToken');
                 localStorage.removeItem('userEmail');
                 sessionToken = null;
@@ -375,9 +375,17 @@ function showMainApp() {
         userAvatar.textContent = currentUser.email.charAt(0).toUpperCase();
     }
     
+    // Update settings email if modal exists
+    const settingsEmail = document.getElementById('settingsEmail');
+    if (settingsEmail && currentUser) {
+        settingsEmail.value = currentUser.email;
+    }
+    
     loadFavorites();
     initializeEventListeners();
-    renderVideos(videos);
+    renderTrending();
+    renderContinueWatching();
+    renderVideos(allVideos);
 }
 
 // Auth Event Listeners
@@ -462,10 +470,10 @@ async function handleForgotPassword() {
         const data = await response.json();
 
         if (response.ok) {
-            successMsg.textContent = currentLang === 'ar' ? '✅ تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني!' : '✅ Reset link sent to your email!';
+            successMsg.textContent = currentLang === 'ar' ? 'تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني!' : 'Reset link sent to your email!';
             successMsg.style.display = 'block';
             document.getElementById('forgotPasswordEmail').value = '';
-            showToast(currentLang === 'ar' ? '📧 تحقق من بريدك الإلكتروني' : '📧 Check your email');
+            showToast(currentLang === 'ar' ? 'تحقق من بريدك الإلكتروني' : 'Check your email');
         } else {
             errorMsg.textContent = data.error || (currentLang === 'ar' ? 'خطأ في إرسال الرابط' : 'Error sending link');
             errorMsg.style.display = 'block';
@@ -512,7 +520,7 @@ async function handleLogin() {
             verificationType = 'login';
             showVerificationForm(email, data.devCode);
             router.navigate('/verify');
-            showToast(currentLang === 'ar' ? '✅ تم إرسال رمز التحقق إلى بريدك!' : '✅ Verification code sent to your email!');
+            showToast(currentLang === 'ar' ? 'تم إرسال رمز التحقق إلى بريدك!' : 'Verification code sent to your email!');
         } else {
             errorMsg.textContent = data.error || (currentLang === 'ar' ? 'خطأ في تسجيل الدخول' : 'Login error');
             errorMsg.style.display = 'block';
@@ -562,7 +570,7 @@ async function handleRegister() {
                 verificationType = 'register';
                 showVerificationForm(data.email, data.devCode);
                 router.navigate('/verify');
-                showToast(currentLang === 'ar' ? '✅ تم إرسال رمز التحقق إلى بريدك!' : '✅ Verification code sent to your email!');
+                showToast(currentLang === 'ar' ? 'تم إرسال رمز التحقق إلى بريدك!' : 'Verification code sent to your email!');
             } else {
                 // No verification needed (shouldn't happen with new flow)
                 sessionToken = data.sessionToken;
@@ -594,9 +602,9 @@ function showVerificationForm(email, devCode) {
     // For development - show code in UI
     if (devCode) {
         const devDisplay = document.getElementById('devCodeDisplay');
-        devDisplay.textContent = `🔧 Development Code: ${devCode}`;
+        devDisplay.textContent = `Development Code: ${devCode}`;
         devDisplay.style.display = 'block';
-        console.log('📧 Verification Code:', devCode);
+        console.log('[Dev] Verification Code:', devCode);
     }
 }
 
@@ -649,7 +657,7 @@ async function handleVerifyEmail() {
             verificationType = null;
             
             router.navigate('/');
-            showToast(currentLang === 'ar' ? '🎉 تم التحقق بنجاح! مرحباً بك!' : '🎉 Successfully verified! Welcome!');
+            showToast(currentLang === 'ar' ? 'تم التحقق بنجاح! مرحباً بك!' : 'Successfully verified! Welcome!');
         } else {
             errorMsg.textContent = data.error || (currentLang === 'ar' ? 'رمز تحقق غير صحيح' : 'Invalid verification code');
             errorMsg.style.display = 'block';
@@ -687,22 +695,22 @@ async function handleResendCode() {
         const data = await response.json();
 
         if (response.ok) {
-            showToast(currentLang === 'ar' ? '✅ تم إعادة إرسال الرمز' : '✅ Code resent');
+            showToast(currentLang === 'ar' ? 'تم إعادة إرسال الرمز' : 'Code resent');
             
             // Show dev code if available
             if (data.devCode) {
                 const devDisplay = document.getElementById('devCodeDisplay');
                 if (devDisplay) {
-                    devDisplay.textContent = `🔧 Development Code: ${data.devCode}`;
+                    devDisplay.textContent = `Development Code: ${data.devCode}`;
                     devDisplay.style.display = 'block';
                 }
-                console.log('📧 New Verification Code:', data.devCode);
+                console.log('[Dev] New Verification Code:', data.devCode);
             }
         } else {
-            showToast(currentLang === 'ar' ? '❌ فشل إعادة الإرسال' : '❌ Failed to resend');
+            showToast(currentLang === 'ar' ? 'فشل إعادة الإرسال' : 'Failed to resend');
         }
     } catch (error) {
-        showToast(currentLang === 'ar' ? '❌ خطأ في الخادم' : '❌ Server error');
+        showToast(currentLang === 'ar' ? 'خطأ في الخادم' : 'Server error');
     }
 }
 
@@ -915,7 +923,7 @@ async function handleChangePassword() {
 }
 
 async function handleLogout() {
-    console.log('🚪 Logging out user');
+    console.log('[Auth] Logging out user');
     
     // Close settings modal if open
     const settingsModal = document.getElementById('settingsModal');
@@ -935,9 +943,9 @@ async function handleLogout() {
                     sessionToken
                 })
             });
-            console.log('✅ Server session invalidated');
+            console.log('[Auth] Server session invalidated');
         } catch (error) {
-            console.error('❌ Logout API error:', error);
+            console.error('[Auth] Logout API error:', error);
         }
     }
 
@@ -959,9 +967,9 @@ async function handleLogout() {
         delete authPage.dataset.initialized;
     }
     
-    console.log('✅ Logout complete');
+    console.log('[Auth] Logout complete');
     router.navigate('/login'); // Use router instead of reload
-    showToast(currentLang === 'ar' ? '👋 تم تسجيل الخروج' : '👋 Logged out');
+    showToast(currentLang === 'ar' ? 'تم تسجيل الخروج' : 'Logged out');
 }
 
 // Render Trending Section
@@ -979,8 +987,8 @@ function renderTrending() {
         
         card.innerHTML = `
             <div class="trending-thumbnail">
-                <div class="trending-play">▶</div>
-                <div class="trending-badge">🔥 ${video.views || 0} ${currentLang === 'ar' ? 'مشاهدة' : 'views'}</div>
+                <div class="trending-play"><span class="material-symbols-outlined">play_arrow</span></div>
+                <div class="trending-badge"><span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">local_fire_department</span> ${video.views || 0} ${currentLang === 'ar' ? 'مشاهدة' : 'views'}</div>
             </div>
             <div class="trending-info">
                 <h3>${title}</h3>
@@ -1019,7 +1027,7 @@ function renderContinueWatching() {
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: ${item.progress || 0}%"></div>
                 </div>
-                ▶
+                <span class="material-symbols-outlined play-icon">play_circle</span>
             </div>
             <div class="video-info">
                 <div class="video-title">${title}</div>
@@ -1059,9 +1067,9 @@ function renderVideos(videosToRender) {
         card.innerHTML = `
             <div class="video-thumbnail">
                 <div class="favorite-icon ${isFavorite ? 'active' : ''}" onclick="toggleFavorite(event, ${video.id})">
-                    ${isFavorite ? '❤️' : '♡'}
+                    <span class="material-symbols-outlined">${isFavorite ? 'favorite' : 'favorite_border'}</span>
                 </div>
-                ▶
+                <span class="material-symbols-outlined play-icon">play_circle</span>
             </div>
             <div class="video-info">
                 <div class="video-title">${title}</div>
@@ -1105,7 +1113,11 @@ async function openVideo(video) {
     // Update favorite button
     const isFavorite = favorites.includes(video.id);
     favoriteBtn.classList.toggle('active', isFavorite);
-    favoriteBtn.querySelector('.heart').textContent = isFavorite ? '♥' : '♡';
+    const icon = favoriteBtn.querySelector('.material-symbols-outlined');
+    if (icon) {
+        icon.textContent = isFavorite ? 'check' : 'add';
+    }
+    favoriteBtn.innerHTML = `<span class="material-symbols-outlined">${isFavorite ? 'check' : 'add'}</span> ${isFavorite ? 'In My List' : 'My List'}`;
     
     // Load rating
     await loadRating(video.id);
@@ -1115,7 +1127,7 @@ async function openVideo(video) {
     video.servers.forEach((server, index) => {
         const btn = document.createElement('button');
         btn.className = 'server-btn' + (index === 0 ? ' active' : '');
-        btn.innerHTML = `<span>📡</span> ${server.name}`;
+        btn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">cloud</span> ${server.name}`;
         btn.addEventListener('click', () => {
             document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -1351,17 +1363,17 @@ function toggleFavorite(event, videoId) {
 function toggleCurrentVideoFavorite() {
     if (currentVideoId) {
         const index = favorites.indexOf(currentVideoId);
-        const favoriteBtn = document.getElementById('modalFavoriteBtn');
+        const favoriteBtn = document.getElementById('favoriteBtn');
         
         if (index > -1) {
             favorites.splice(index, 1);
             favoriteBtn.classList.remove('active');
-            favoriteBtn.querySelector('.heart').textContent = '♡';
+            favoriteBtn.innerHTML = '<span class="material-symbols-outlined">add</span> My List';
             showToast(currentLang === 'ar' ? 'تم الإزالة من المفضلة' : 'Removed from favorites');
         } else {
             favorites.push(currentVideoId);
             favoriteBtn.classList.add('active');
-            favoriteBtn.querySelector('.heart').textContent = '♥';
+            favoriteBtn.innerHTML = '<span class="material-symbols-outlined">check</span> In My List';
             showToast(currentLang === 'ar' ? 'تم الإضافة إلى المفضلة' : 'Added to favorites');
         }
         
@@ -1429,7 +1441,9 @@ function updateFavoritesPanel() {
         const title = currentLang === 'ar' ? video.titleAr : video.titleEn;
         
         card.innerHTML = `
-            <div class="video-thumbnail" style="height: 150px; font-size: 40px;">▶</div>
+            <div class="video-thumbnail" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                <span class="material-symbols-outlined" style="font-size: 48px;">play_circle</span>
+            </div>
             <div class="video-info">
                 <div class="video-title">${title}</div>
                 <div class="video-meta">
