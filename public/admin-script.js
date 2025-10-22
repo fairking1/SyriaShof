@@ -133,14 +133,21 @@ async function adminLogout() {
 }
 
 // Show Section
-function showSection(section) {
+function showSection(section, clickedElement) {
     // Remove active class from all menu items
     document.querySelectorAll('.sidebar-menu a').forEach(link => {
         link.classList.remove('active');
     });
 
-    // Add active class to clicked menu item
-    event.target.closest('a').classList.add('active');
+    // Add active class to clicked menu item (if provided)
+    if (clickedElement) {
+        const link = clickedElement.closest ? clickedElement.closest('a') : clickedElement;
+        if (link) link.classList.add('active');
+    } else {
+        // If no element provided, find the link for this section
+        const link = document.querySelector(`.sidebar-menu a[href="#"][onclick*="${section}"]`);
+        if (link) link.classList.add('active');
+    }
 
     // Hide all sections
     document.querySelectorAll('.admin-section').forEach(sec => {
