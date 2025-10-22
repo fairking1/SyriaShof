@@ -82,11 +82,21 @@ if (cluster.isPrimary && NODE_ENV === 'production') {
   const sendEmailRouter = require('./routes/send-email');
   const reportRouter = require('./routes/report');
   const adminRouter = require('./routes/admin');
+  const commentsRouter = require('./routes/comments');
+  const watchlistRouter = require('./routes/watchlist');
+  const historyRouter = require('./routes/history');
+  const streamRouter = require('./routes/stream');
+  const profileRouter = require('./routes/profile');
 
   app.use('/api/auth', authRouter);
   app.use('/api/movies', moviesRouter);
   app.use('/api/send-email', sendEmailRouter);
   app.use('/api/report', reportRouter);
+  app.use('/api/comments', commentsRouter);
+  app.use('/api/watchlist', watchlistRouter);
+  app.use('/api/history', historyRouter);
+  app.use('/api/stream', streamRouter);
+  app.use('/api/profile', profileRouter);
   app.use('/api/admin', adminRouter);
 
   // Health check endpoint

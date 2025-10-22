@@ -16,62 +16,48 @@ function getDB() {
 // DASHBOARD & ANALYTICS
 // ============================================
 
-// GET /api/admin/dashboard - Get dashboard statistics
 router.post('/dashboard', requireAdmin, async (req, res) => {
   try {
     const sql = getDB();
     
-    // Get statistics
-    const [totalUsers] = await sql`SELECT COUNT(*) as count FROM users WHERE is_admin = FALSE`;
-    const [totalMovies] = await sql`SELECT COUNT(*) as count FROM movies WHERE status = 'active'`;
-    const [totalReports] = await sql`SELECT COUNT(*) as count FROM reports WHERE status = 'pending'`;
-    const [totalComments] = await sql`SELECT COUNT(*) as count FROM comments`;
+    const [totalUsers] = await sql`SELECT COUNT(*) as count FROM users WHERE is_admin = FALSE OR is_admin IS NULL`;
     
-    // Recent registrations (last 7 days)
-    const recentUsers = await sql`
-      SELECT DATE(created_at) as date, COUNT(*) as count
-      FROM users
-      WHERE created_at > NOW() - INTERVAL '7 days'
-      GROUP BY DATE(created_at)
-      ORDER BY date DESC
-    `;
+    let totalMovies = 0, totalReports = 0, totalComments = 0;
+    let topMovies = [], recentReports = [];
     
-    // Top rated movies
-    const topMovies = await sql`
-      SELECT id, title_ar, title_en, rating, views
-      FROM movies
-      WHERE status = 'active'
-      ORDER BY rating DESC, views DESC
-      LIMIT 10
-    `;
+    try {
+      const [moviesCount] = await sql`SELECT COUNT(*) as count FROM movies WHERE status = 'active'`;
+      totalMovies = parseInt(moviesCount.count);
+      topMovies = await sql`SELECT id, title_ar, title_en, rating, views FROM movies WHERE status = 'active' ORDER BY rating DESC, views DESC LIMIT 10`;
+    } catch (e) {}
     
-    // Recent reports
-    const recentReports = await sql`
-      SELECT id, email, category, description, status, created_at
-      FROM reports
-      ORDER BY created_at DESC
-      LIMIT 10
-    `;
+    try {
+      const [reportsCount] = await sql`SELECT COUNT(*) as count FROM reports WHERE status = 'pending'`;
+      totalReports = parseInt(reportsCount.count);
+      recentReports = await sql`SELECT id, email, category, description, status, created_at FROM reports ORDER BY created_at DESC LIMIT 10`;
+    } catch (e) {}
     
-    console.log(`✅ Dashboard data fetched by ${req.admin.email}`);
+    try {
+      const [commentsCount] = await sql`SELECT COUNT(*) as count FROM comments`;
+      totalComments = parseInt(commentsCount.count);
+    } catch (e) {}
+    
+    const recentUsers = await sql`SELECT DATE(created_at) as date, COUNT(*) as count FROM users WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY DATE(created_at) ORDER BY date DESC`;
     
     res.json({
       stats: {
         totalUsers: parseInt(totalUsers.count),
-        totalMovies: parseInt(totalMovies.count),
-        pendingReports: parseInt(totalReports.count),
-        totalComments: parseInt(totalComments.count)
+        totalMovies,
+        pendingReports: totalReports,
+        totalComments
       },
-      charts: {
-        recentUsers
-      },
+      charts: { recentUsers },
       topMovies,
       recentReports
     });
-    
   } catch (error) {
     console.error('❌ Dashboard error:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard data' });
+    res.status(500).json({ error: error.message });
   }
 });
 
