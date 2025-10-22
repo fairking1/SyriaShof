@@ -577,6 +577,123 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // ============================================
+    // REQUEST LOGIN CODE (No reCAPTCHA)
+    // ============================================
+    if (action === 'request-login-code') {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password required' });
+      }
+      
+      const sql = getDB();
+      
+      // Check if user exists and password is correct
+      const users = await sql`SELECT * FROM users WHERE email = ${email}`;
+      
+      if (users.length === 0) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+      
+      const user = users[0];
+      
+      // Verify password
+      const bcrypt = require('bcrypt');
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      
+      if (!passwordMatch) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+      
+      // Generate 6-digit code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const expires = Date.now() + (10 * 60 * 1000); // 10 minutes
+      
+      // Store code in users table (reusing verification fields)
+      await sql`
+        UPDATE users 
+        SET verification_code = ${code}, verification_expires = ${expires}
+        WHERE email = ${email}
+      `;
+      
+      // Send verification email
+      const emailSent = await sendEmail(req, email, 'Login Verification Code', code, 'login-code');
+      
+      console.log(`✅ Login code sent to ${email}: ${code}`);
+      
+      return res.json({ 
+        success: true,
+        message: 'Verification code sent',
+        devCode: process.env.NODE_ENV !== 'production' ? code : undefined
+      });
+    }
+    
+    // ============================================
+    // VERIFY LOGIN CODE
+    // ============================================
+    if (action === 'verify-login-code') {
+      const { email, password, code } = req.body;
+      
+      if (!email || !password || !code) {
+        return res.status(400).json({ error: 'Email, password, and code required' });
+      }
+      
+      const sql = getDB();
+      
+      // Check if user exists
+      const users = await sql`SELECT * FROM users WHERE email = ${email}`;
+      
+      if (users.length === 0) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      
+      const user = users[0];
+      
+      // Verify password
+      const bcrypt = require('bcrypt');
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      
+      if (!passwordMatch) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      
+      // Verify code
+      if (user.verification_code !== code) {
+        return res.status(401).json({ error: 'Invalid verification code' });
+      }
+      
+      // Check if code expired
+      if (Date.now() > user.verification_expires) {
+        return res.status(401).json({ error: 'Verification code expired' });
+      }
+      
+      // Clear verification code
+      await sql`
+        UPDATE users 
+        SET verification_code = NULL, verification_expires = NULL
+        WHERE email = ${email}
+      `;
+      
+      // Create session
+      const sessionToken = require('crypto').randomBytes(32).toString('hex');
+      const expires = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days
+      
+      await sql`
+        INSERT INTO sessions (token, user_id, email, expires)
+        VALUES (${sessionToken}, ${user.id}, ${email}, ${expires})
+      `;
+      
+      console.log(`✅ User logged in with verification: ${email}`);
+      
+      return res.json({
+        success: true,
+        sessionToken,
+        email,
+        message: 'Logged in successfully'
+      });
+    }
+    
     // Invalid action
     console.log(`❌ Invalid action: ${action}`);
     return res.status(400).json({ error: 'Invalid action' });

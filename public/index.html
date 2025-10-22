@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 
@@ -29,10 +28,6 @@
             <div class="form-group">
                 <label class="form-label">Password</label>
                 <input type="password" id="loginPassword" class="form-input" autocomplete="current-password">
-            </div>
-            
-            <div class="form-group">
-                <div id="recaptcha-login-container"></div>
             </div>
             
             <div class="form-group">
@@ -69,10 +64,6 @@
             </div>
             
             <div class="form-group">
-                <div id="recaptcha-register-container"></div>
-            </div>
-            
-            <div class="form-group">
                 <button class="btn btn-primary" id="registerBtn" style="width: 100%;">Sign Up</button>
             </div>
             
@@ -81,9 +72,9 @@
             </div>
         </div>
         
-        <!-- Verify Form -->
+        <!-- Verify Form (for both registration and login) -->
         <div id="verifyForm" style="display:none;">
-            <h1 class="auth-title">Verify Email</h1>
+            <h1 class="auth-title">Verify Code</h1>
             <p style="color: var(--text-secondary); margin-bottom: 30px;">Enter the 6-digit code sent to <span id="verifyEmailDisplay"></span></p>
             <div class="error-msg" id="verifyErrorMsg" style="display:none;"></div>
             
@@ -92,11 +83,15 @@
             </div>
             
             <div class="form-group">
-                <button class="btn btn-primary" id="verifyBtn" style="width: 100%;">Verify</button>
+                <button class="btn btn-primary" id="verifyBtn" style="width: 100%;">Verify & Login</button>
             </div>
             
             <div style="text-align: center; margin-top: 20px;">
                 <button class="btn btn-secondary" id="resendCodeBtn">Resend Code</button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="#" class="nav-link" onclick="router.navigate('/login'); return false;">Back to Login</a>
             </div>
         </div>
         

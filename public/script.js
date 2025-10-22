@@ -12,6 +12,8 @@ let sessionToken = null;
 let currentAuthAction = null;
 let currentEmail = null;
 let pendingVerificationEmail = null;
+let pendingVerificationPassword = null;
+let verificationType = null; // 'login' or 'register'
 let watchHistory = JSON.parse(localStorage.getItem('watchHistory') || '[]');
 let continueWatching = JSON.parse(localStorage.getItem('continueWatching') || '[]');
 
@@ -203,41 +205,7 @@ const router = {
     }
 };
 
-// Initialize reCAPTCHA
-let recaptchaLoginWidget = null;
-let recaptchaRegisterWidget = null;
-
-function initRecaptcha() {
-    // ⚠️ REPLACE WITH YOUR reCAPTCHA v2 CHECKBOX KEY
-    // Get it from: https://www.google.com/recaptcha/admin/create
-    // Make sure to select: reCAPTCHA v2 → "I'm not a robot" Checkbox
-    const siteKey = '6LfWUtsrAAAAAFl_eSacNWtQfyFMYh7Veq_ebmgj'; // 👈 Paste your NEW v2 key here
-    
-    // Wait for grecaptcha to be ready
-    if (typeof grecaptcha !== 'undefined' && siteKey && siteKey !== 'YOUR_RECAPTCHA_V2_SITE_KEY') {
-        try {
-            recaptchaLoginWidget = grecaptcha.render('recaptcha-login-container', {
-                'sitekey': siteKey,
-                'theme': 'dark'
-            });
-            recaptchaRegisterWidget = grecaptcha.render('recaptcha-register-container', {
-                'sitekey': siteKey,
-                'theme': 'dark'
-            });
-            console.log('✅ reCAPTCHA v2 initialized successfully!');
-        } catch (e) {
-            console.error('❌ reCAPTCHA init error:', e.message);
-            console.log('💡 Make sure you created a reCAPTCHA v2 CHECKBOX key (not v3)');
-        }
-    } else if (siteKey === 'YOUR_RECAPTCHA_V2_SITE_KEY') {
-        console.warn('⚠️ Please add your reCAPTCHA v2 Site Key in script.js');
-    }
-}
-
-// Call initRecaptcha when page loads
-window.addEventListener('load', () => {
-    setTimeout(initRecaptcha, 1000);
-});
+// No reCAPTCHA - Using email verification instead
 
 // Sample Videos Data with multiple servers
 const videos = [
@@ -515,8 +483,6 @@ async function handleForgotPassword() {
 async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    const rememberMeEl = document.getElementById('rememberMe');
-    const rememberMe = rememberMeEl ? rememberMeEl.checked : false;
     const errorMsg = document.getElementById('loginErrorMsg');
 
     if (!email || !password) {
@@ -525,57 +491,31 @@ async function handleLogin() {
         return;
     }
 
-    // Get reCAPTCHA response
-    let recaptchaToken = null;
-    if (typeof grecaptcha !== 'undefined' && recaptchaLoginWidget !== null) {
-        try {
-            recaptchaToken = grecaptcha.getResponse(recaptchaLoginWidget);
-            if (!recaptchaToken) {
-                errorMsg.textContent = currentLang === 'ar' ? 'الرجاء التحقق من أنك لست روبوت' : 'Please verify you are not a robot';
-                errorMsg.style.display = 'block';
-                return;
-            }
-        } catch (e) {
-            console.warn('reCAPTCHA not configured, skipping validation');
-        }
-    }
-
     try {
+        // Request login verification code
         const response = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: 'login',
+                action: 'request-login-code',
                 email,
-                password,
-                rememberMe,
-                recaptchaToken
+                password
             })
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            // Login successful
-            sessionToken = data.sessionToken;
-            localStorage.setItem('sessionToken', sessionToken);
-            localStorage.setItem('userEmail', data.email); // Store email for report function
-            currentUser = { email: data.email };
-            router.navigate('/'); // Use router instead of showMainApp()
-            showToast(currentLang === 'ar' ? 'تم تسجيل الدخول بنجاح!' : 'Successfully logged in!');
+            // Code sent successfully
+            pendingVerificationEmail = email;
+            pendingVerificationPassword = password;
+            verificationType = 'login';
+            showVerificationForm(email, data.devCode);
+            router.navigate('/verify');
+            showToast(currentLang === 'ar' ? '✅ تم إرسال رمز التحقق إلى بريدك!' : '✅ Verification code sent to your email!');
         } else {
-            // Check if needs verification
-            if (data.needsVerification) {
-                pendingVerificationEmail = data.email;
-                showVerificationForm(data.email);
-                router.navigate('/verify'); // Use router
-                errorMsg.textContent = '';
-                errorMsg.style.display = 'none';
-                showToast(currentLang === 'ar' ? '⚠️ يرجى التحقق من بريدك الإلكتروني أولاً' : '⚠️ Please verify your email first');
-            } else {
-                errorMsg.textContent = data.error || (currentLang === 'ar' ? 'خطأ في تسجيل الدخول' : 'Login error');
-                errorMsg.style.display = 'block';
-            }
+            errorMsg.textContent = data.error || (currentLang === 'ar' ? 'خطأ في تسجيل الدخول' : 'Login error');
+            errorMsg.style.display = 'block';
         }
     } catch (error) {
         errorMsg.textContent = currentLang === 'ar' ? 'خطأ في الاتصال بالخادم' : 'Server connection error';
@@ -603,21 +543,6 @@ async function handleRegister() {
         return;
     }
 
-    // Get reCAPTCHA response
-    let recaptchaToken = null;
-    if (typeof grecaptcha !== 'undefined' && recaptchaRegisterWidget !== null) {
-        try {
-            recaptchaToken = grecaptcha.getResponse(recaptchaRegisterWidget);
-            if (!recaptchaToken) {
-                errorMsg.textContent = currentLang === 'ar' ? 'الرجاء التحقق من أنك لست روبوت' : 'Please verify you are not a robot';
-                errorMsg.style.display = 'block';
-                return;
-            }
-        } catch (e) {
-            console.warn('reCAPTCHA not configured, skipping validation');
-        }
-    }
-
     try {
         const response = await fetch('/api/auth', {
             method: 'POST',
@@ -625,9 +550,7 @@ async function handleRegister() {
             body: JSON.stringify({
                 action: 'register',
                 email,
-                password,
-                rememberMe,
-                recaptchaToken
+                password
             })
         });
 
@@ -637,15 +560,17 @@ async function handleRegister() {
             // Registration successful - now need verification
             if (data.needsVerification) {
                 pendingVerificationEmail = data.email;
+                pendingVerificationPassword = password;
+                verificationType = 'register';
                 showVerificationForm(data.email, data.devCode);
-                router.navigate('/verify'); // Use router
+                router.navigate('/verify');
                 showToast(currentLang === 'ar' ? '✅ تم إرسال رمز التحقق إلى بريدك!' : '✅ Verification code sent to your email!');
             } else {
                 // No verification needed (shouldn't happen with new flow)
                 sessionToken = data.sessionToken;
                 localStorage.setItem('sessionToken', sessionToken);
                 currentUser = { email: data.email };
-                router.navigate('/'); // Use router
+                router.navigate('/');
                 showToast(currentLang === 'ar' ? 'تم إنشاء الحساب بنجاح!' : 'Account created successfully!');
             }
         } else {
@@ -688,14 +613,28 @@ async function handleVerifyEmail() {
     }
 
     try {
+        let action = 'verify-email'; // Default for registration
+        let payload = {
+            action,
+            email: pendingVerificationEmail,
+            code: code
+        };
+        
+        // If this is a login verification, include password
+        if (verificationType === 'login' && pendingVerificationPassword) {
+            action = 'verify-login-code';
+            payload = {
+                action,
+                email: pendingVerificationEmail,
+                password: pendingVerificationPassword,
+                code: code
+            };
+        }
+        
         const response = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'verify-email',
-                email: pendingVerificationEmail,
-                code: code
-            })
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();
@@ -705,7 +644,13 @@ async function handleVerifyEmail() {
             localStorage.setItem('sessionToken', sessionToken);
             localStorage.setItem('userEmail', data.email);
             currentUser = { email: data.email };
-            router.navigate('/'); // Use router
+            
+            // Clear verification data
+            pendingVerificationEmail = null;
+            pendingVerificationPassword = null;
+            verificationType = null;
+            
+            router.navigate('/');
             showToast(currentLang === 'ar' ? '🎉 تم التحقق بنجاح! مرحباً بك!' : '🎉 Successfully verified! Welcome!');
         } else {
             errorMsg.textContent = data.error || (currentLang === 'ar' ? 'رمز تحقق غير صحيح' : 'Invalid verification code');
@@ -721,13 +666,24 @@ async function handleResendCode() {
     if (!pendingVerificationEmail) return;
 
     try {
+        let payload = {
+            action: 'resend-code',
+            email: pendingVerificationEmail
+        };
+        
+        // If this is a login verification, resend login code
+        if (verificationType === 'login' && pendingVerificationPassword) {
+            payload = {
+                action: 'request-login-code',
+                email: pendingVerificationEmail,
+                password: pendingVerificationPassword
+            };
+        }
+        
         const response = await fetch('/api/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'resend-code',
-                email: pendingVerificationEmail
-            })
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();
@@ -738,8 +694,10 @@ async function handleResendCode() {
             // Show dev code if available
             if (data.devCode) {
                 const devDisplay = document.getElementById('devCodeDisplay');
-                devDisplay.textContent = `🔧 Development Code: ${data.devCode}`;
-                devDisplay.style.display = 'block';
+                if (devDisplay) {
+                    devDisplay.textContent = `🔧 Development Code: ${data.devCode}`;
+                    devDisplay.style.display = 'block';
+                }
                 console.log('📧 New Verification Code:', data.devCode);
             }
         } else {

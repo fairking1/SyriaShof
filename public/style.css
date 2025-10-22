@@ -800,16 +800,6 @@ body::before {
     }
 }
 
-/* reCAPTCHA */
-#recaptcha-login-container,
-#recaptcha-register-container {
-    margin: 20px 0;
-    display: flex;
-    justify-content: center;
-    transform: scale(0.95);
-    transform-origin: center;
-}
-
 /* Utility */
 .hidden {
     display: none !important;

@@ -180,7 +180,15 @@ function getEmailTemplate(type, code, resetLink) {
     `;
   }
 
-  if (type === 'verification') {
+  if (type === 'verification' || type === 'login-code') {
+    const title = type === 'login-code' ? 'رمز تسجيل الدخول' : 'رمز التحقق من البريد الإلكتروني';
+    const message = type === 'login-code' 
+      ? 'استخدم الرمز التالي لتسجيل الدخول إلى حسابك:' 
+      : 'مرحباً بك في Syria Shof! استخدم الرمز التالي للتحقق من بريدك الإلكتروني:';
+    const warning = type === 'login-code'
+      ? 'إذا لم تحاول تسجيل الدخول، يرجى تجاهل هذه الرسالة وتأمين حسابك.'
+      : 'إذا لم تقم بإنشاء حساب، يمكنك تجاهل هذه الرسالة بأمان.';
+    
     return `
       <!DOCTYPE html>
       <html dir="rtl" lang="ar">
@@ -193,28 +201,28 @@ function getEmailTemplate(type, code, resetLink) {
           <tr>
             <td align="center">
               <table width="600" cellpadding="0" cellspacing="0" style="background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-                <!-- Header with Syrian Flag Colors -->
+                <!-- Header -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, ${syrianFlagColors.green} 0%, #004d25 100%); padding: 30px; text-align: center;">
+                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
                     <h1 style="color: white; margin: 0; font-size: 32px;">
-                      🇸🇾 Syria Shof
+                      SYRIA SHOF
                     </h1>
-                    <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">شوف سوريا</p>
+                    <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">منصة المحتوى السوري</p>
                   </td>
                 </tr>
                 
                 <!-- Content -->
                 <tr>
                   <td style="padding: 40px 30px; text-align: center;">
-                    <h2 style="color: #333; margin: 0 0 20px 0;">رمز التحقق من البريد الإلكتروني</h2>
+                    <h2 style="color: #333; margin: 0 0 20px 0;">${title}</h2>
                     <p style="color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                      مرحباً بك في Syria Shof! استخدم الرمز التالي للتحقق من بريدك الإلكتروني:
+                      ${message}
                     </p>
                     
                     <!-- Verification Code -->
-                    <div style="background: linear-gradient(135deg, ${syrianFlagColors.green} 0%, ${syrianFlagColors.red} 100%); padding: 3px; border-radius: 10px; display: inline-block; margin: 20px 0;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 3px; border-radius: 10px; display: inline-block; margin: 20px 0;">
                       <div style="background: white; padding: 20px 40px; border-radius: 8px;">
-                        <span style="font-size: 36px; font-weight: bold; color: ${syrianFlagColors.green}; letter-spacing: 8px;">
+                        <span style="font-size: 36px; font-weight: bold; color: #667eea; letter-spacing: 8px;">
                           ${code}
                         </span>
                       </div>
@@ -224,8 +232,8 @@ function getEmailTemplate(type, code, resetLink) {
                       هذا الرمز صالح لمدة 10 دقائق
                     </p>
                     
-                    <p style="color: #666; font-size: 14px; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; border-right: 4px solid ${syrianFlagColors.red};">
-                      ⚠️ إذا لم تقم بإنشاء حساب، يمكنك تجاهل هذه الرسالة بأمان.
+                    <p style="color: #666; font-size: 14px; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; border-right: 4px solid #f5576c;">
+                      ⚠️ ${warning}
                     </p>
                   </td>
                 </tr>
