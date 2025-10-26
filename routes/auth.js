@@ -11,34 +11,6 @@ function getDB() {
   return neon(connectionString);
 }
 
-// Verify reCAPTCHA token
-async function verifyRecaptcha(token) {
-  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-  
-  if (!secretKey) {
-    console.warn('⚠️ reCAPTCHA secret key not set - skipping verification');
-    return true;
-  }
-
-  try {
-    const fetch = require('node-fetch');
-    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: `secret=${secretKey}&response=${token}`,
-    });
-
-    const data = await response.json();
-    console.log('✅ reCAPTCHA verification result:', data.success);
-    return data.success;
-  } catch (error) {
-    console.error('❌ reCAPTCHA verification error:', error);
-    return false;
-  }
-}
-
 // Send email helper with better error handling
 async function sendEmail(req, to, subject, code, type, resetLink = null) {
   try {
@@ -116,12 +88,7 @@ router.post('/', async (req, res) => {
       if (!recaptchaToken) {
         return res.status(400).json({ error: 'reCAPTCHA verification required' });
       }
-
-      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
-      if (!isRecaptchaValid) {
-        return res.status(400).json({ error: 'reCAPTCHA verification failed' });
-      }
-
+      
       try {
         // Check if user already exists
         const existingUsers = await sql`SELECT id, is_verified FROM users WHERE email = ${email}`;
@@ -193,11 +160,6 @@ router.post('/', async (req, res) => {
       if (recaptchaToken !== 'admin-bypass') {
         if (!recaptchaToken) {
           return res.status(400).json({ error: 'reCAPTCHA verification required' });
-        }
-
-        const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
-        if (!isRecaptchaValid) {
-          return res.status(400).json({ error: 'reCAPTCHA verification failed' });
         }
       } else {
         console.log('🛡️ Admin panel login - reCAPTCHA bypassed');
