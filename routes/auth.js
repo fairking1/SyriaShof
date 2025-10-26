@@ -62,7 +62,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const { action, email, password, recaptchaToken, sessionToken, code, token: resetToken, newPassword } = req.body;
+    const { action, email, password, sessionToken, code, token: resetToken, newPassword } = req.body;
 
     console.log(`📝 Auth action: ${action} ${email ? `for ${email}` : ''}`);
 
@@ -85,10 +85,6 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Password must be at least 6 characters' });
       }
 
-      if (!recaptchaToken) {
-        return res.status(400).json({ error: 'reCAPTCHA verification required' });
-      }
-      
       try {
         // Check if user already exists
         const existingUsers = await sql`SELECT id, is_verified FROM users WHERE email = ${email}`;
@@ -154,15 +150,6 @@ router.post('/', async (req, res) => {
     if (action === 'login') {
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password required' });
-      }
-
-      // Check reCAPTCHA (skip for admin panel bypass)
-      if (recaptchaToken !== 'admin-bypass') {
-        if (!recaptchaToken) {
-          return res.status(400).json({ error: 'reCAPTCHA verification required' });
-        }
-      } else {
-        console.log('🛡️ Admin panel login - reCAPTCHA bypassed');
       }
 
       try {
