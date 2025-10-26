@@ -205,7 +205,6 @@ const router = {
     }
 };
 
-// No reCAPTCHA - Using email verification instead
 
 // Sample Videos Data with multiple servers
 const videos = [
@@ -1067,13 +1066,13 @@ function renderVideos(videosToRender) {
         const card = document.createElement('div');
         card.className = 'video-card';
         
-        const isFavorite = favorites.includes(video.id);
+        const isFavorite = favorites.includes(videos.id);
         const title = currentLang === 'ar' ? video.titleAr : video.titleEn;
         const categoryText = getCategoryText(video.category);
         
         card.innerHTML = `
             <div class="video-thumbnail">
-                <div class="favorite-icon ${isFavorite ? 'active' : ''}" onclick="toggleFavorite(event, ${video.id})">
+                <div class="favorite-icon ${isFavorite ? 'active' : ''}" onclick="toggleFavorite(event, ${videos.id})">
                     <span class="material-symbols-outlined">${isFavorite ? 'favorite' : 'favorite_border'}</span>
                 </div>
                 <span class="material-symbols-outlined play-icon">play_circle</span>
@@ -1102,7 +1101,7 @@ function renderVideos(videosToRender) {
 
 // Open Video Modal
 async function openVideo(video) {
-    currentVideoId = video.id;
+    currentVideoId = videos.id;
     const modal = document.getElementById('movieModal');
     const player = document.getElementById('moviePlayer');
     const title = document.getElementById('movieTitle');
@@ -1123,7 +1122,7 @@ async function openVideo(video) {
     
     // Update favorite button
     if (favoriteBtn) {
-        const isFavorite = favorites.includes(video.id);
+        const isFavorite = favorites.includes(videos.id);
         favoriteBtn.classList.toggle('active', isFavorite);
         favoriteBtn.innerHTML = `<span class="material-symbols-outlined">${isFavorite ? 'check' : 'add'}</span> ${isFavorite ? 'In My List' : 'My List'}`;
         
@@ -1132,7 +1131,7 @@ async function openVideo(video) {
     }
     
     // Load rating
-    await loadRating(video.id);
+    await loadRating(videos.id);
     
     // Load first server by default if available
     if (video.servers && video.servers.length > 0) {

@@ -85,7 +85,6 @@ async function handleAdminLogin(e) {
                 action: 'login',
                 email,
                 password,
-                recaptchaToken: 'admin-bypass' // Admins don't need reCAPTCHA
             })
         });
 
